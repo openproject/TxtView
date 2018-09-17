@@ -17,13 +17,13 @@ class TxtPageView : View {
 
 
     var mContent : String = ""
-    var mPage : Int = 0
+    var mPage : Int = 1
     var mPageSize = 8
     var mLines = ArrayList<String>()
 
     init {
         mPaint.color = Color.WHITE
-        mPaint.textSize = 18.0f
+        mPaint.textSize = 24.0f
         mFontMetrics = mPaint.fontMetrics
         lineHeight = mFontMetrics.bottom - mFontMetrics.top
     }
@@ -36,6 +36,8 @@ class TxtPageView : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        mPageSize = ((measuredHeight - lineHeight - 4 - 24.0f) / lineHeight).toInt()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -43,13 +45,11 @@ class TxtPageView : View {
 
         println("--------------------- mpage: $mPage ,view height: " + height + ", line height: $lineHeight")
 
-        mPageSize = ((height - lineHeight - 4 - 24.0f) / lineHeight).toInt()
 
-        var startLine = mPage * mPageSize
+        var startLine = (mPage - 1) * mPageSize
         var endLine = startLine + mPageSize
         if (endLine > mLines.size - 1) {
             endLine = mLines.size - 1
-            mPage = -1
         }
         var x = 8.0f
         var y = 24.0f
@@ -59,13 +59,11 @@ class TxtPageView : View {
             canvas.drawLine(44.0f, y + mFontMetrics.descent, 300.0f, y + mFontMetrics.descent, mPaint)
         }
 
-        val pageInfo = "$mPage / ${mLines.size / mPageSize}"
+        val pageInfo = getPageInfoString()
         val pageInfoWidth = mPaint.measureText(pageInfo)
 
         canvas.drawText(pageInfo, width - pageInfoWidth - 8.0f, y + lineHeight, mPaint)
     }
-
-//    private fun drawPageInfo(canvas: Canvas) {}
 
     fun setContent(content: String) {
         this.mContent = content
@@ -97,14 +95,21 @@ class TxtPageView : View {
         println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
     }
 
+    private fun getPageInfoString() : String {
+        return "$mPage / ${(mLines.size + mPageSize - 1) / mPageSize}"
+    }
+
     fun prevPage() {
         mPage--
-        if (mPage < 0) {
-            mPage = 0
+        if (mPage <= 0) {
+            mPage = 1
         }
         invalidate()
     }
     fun nextPage() {
+        if (mPageSize * mPage >= mLines.size) {
+            return
+        }
         mPage++
         invalidate()
     }

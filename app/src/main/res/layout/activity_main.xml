@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <com.example.jay.txtpageviewer.TxtPageView android:id="@+id/contentView"
+    <LinearLayout
+        android:id="@+id/bottom_bars"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/prevPage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="上一页" />
+
+        <Button
+            android:id="@+id/nextPage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="下一页" />
+    </LinearLayout>
+
+    <com.example.jay.txtpageviewer.TxtPageView
+        android:id="@+id/contentView"
         android:layout_width="wrap_content"
-        android:layout_height="330dp"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_bars"
         android:background="@android:color/black"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -17,19 +39,5 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button android:id="@+id/prevPage"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:text="上一页"
-            android:layout_height="wrap_content" />
-        <Button android:id="@+id/nextPage"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:text="下一页"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>
