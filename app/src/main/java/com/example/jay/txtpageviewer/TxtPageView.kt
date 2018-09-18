@@ -10,6 +10,7 @@ import android.view.View
 import com.jayfeng.lesscode.core.DisplayLess
 import java.util.*
 import android.animation.ValueAnimator
+import android.view.ViewTreeObserver
 import android.view.animation.DecelerateInterpolator
 
 
@@ -39,6 +40,17 @@ class TxtPageView : View {
         lineHeight = mFontMetrics.bottom - mFontMetrics.top
 
         mBg = (resources.getDrawable(R.drawable.theme_leather_bg) as BitmapDrawable).bitmap
+
+        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener{
+            override fun onPreDraw(): Boolean {
+                viewTreeObserver.removeOnPreDrawListener(this)
+
+                mPageSize = ((measuredHeight - lineHeight - 4 - 24.0f) / lineHeight).toInt()
+
+                return true
+            }
+
+        })
     }
 
     constructor(context: Context?) : super(context) {
@@ -50,10 +62,8 @@ class TxtPageView : View {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-
-        mPageSize = ((measuredHeight - lineHeight - 4 - 24.0f) / lineHeight).toInt()
-        mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
     }
+
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -128,33 +138,36 @@ class TxtPageView : View {
     fun setContent(content: String) {
         this.mContent = content
 
-        val startTime = System.currentTimeMillis()
-        val widthPaintLength = mPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串", false, measuredWidth.toFloat() - 14, null)
-        mContent.split("\n").forEach { paragraph ->
-            var startIndex = 0
-            while (startIndex < paragraph.length) {
-                var endIndex = startIndex + widthPaintLength
-                if (endIndex > paragraph.length) {
-                    endIndex = paragraph.length
-                }
+        post {
+            val startTime = System.currentTimeMillis()
+            val widthPaintLength = mPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串", false, measuredWidth.toFloat() - 14, null)
+            mContent.split("\n").forEach { paragraph ->
+                var startIndex = 0
+                while (startIndex < paragraph.length) {
+                    var endIndex = startIndex + widthPaintLength
+                    if (endIndex > paragraph.length) {
+                        endIndex = paragraph.length
+                    }
 
 //                Log.e("feng","------ 1startIndex: $startIndex, endIndex: $endIndex")
 
-                var line = paragraph.substring(startIndex, endIndex)
-                while (mPaint.measureText(line + "好") < (width - 12.0f) && endIndex < paragraph.length) {
-                    endIndex += 1
-                    line = paragraph.substring(startIndex, endIndex)
+                    var line = paragraph.substring(startIndex, endIndex)
+                    while (mPaint.measureText(line + "好") < (width - 12.0f) && endIndex < paragraph.length) {
+                        endIndex += 1
+                        line = paragraph.substring(startIndex, endIndex)
+                    }
+                    mLines.add(line)
+                    startIndex = endIndex
                 }
-                mLines.add(line)
-                startIndex = endIndex
-            }
 
 //            Log.e("feng", "------------------paragraph: " + paragraph)
+            }
+
+            mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
+            invalidate()
+
+            println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
         }
-
-        mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
-
-        println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
     }
 
     private fun getPageInfoString(page: Int): String {
@@ -196,7 +209,7 @@ class TxtPageView : View {
 
         val animator = ValueAnimator.ofFloat(moveX, width.toFloat())
         animator.interpolator = DecelerateInterpolator()
-        animator.duration = 500
+        animator.duration = 240
         animator.addUpdateListener { va ->
             moveX = va.animatedValue as Float
             invalidate()
@@ -231,7 +244,7 @@ class TxtPageView : View {
 
         val animator = ValueAnimator.ofFloat(moveX, -width.toFloat())
         animator.interpolator = DecelerateInterpolator()
-        animator.duration = 400
+        animator.duration = 240
         animator.addUpdateListener { va ->
             moveX = va.animatedValue as Float
             invalidate()

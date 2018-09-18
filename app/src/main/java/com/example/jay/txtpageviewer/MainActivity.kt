@@ -6,19 +6,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    private var mPage = 0
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        contentView.post {
-            val sb = StringBuilder()
-            for (i in 1 .. 33) {
-                sb.append(content)
-            }
-            contentView.setContent(sb.toString())
+        val sb = StringBuilder()
+        for (i in 1 .. 33) {
+            sb.append(content)
         }
+        contentView.setContent(sb.toString())
 
         prevPage.setOnClickListener {
             contentView.prevPageWithAnim()
