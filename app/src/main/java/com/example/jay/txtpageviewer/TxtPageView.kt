@@ -47,13 +47,16 @@ class TxtPageView : View {
 
 
         var startLine = (mPage - 1) * mPageSize
-        var endLine = startLine + mPageSize
+        var endLine = startLine + mPageSize - 1
         if (endLine > mLines.size - 1) {
             endLine = mLines.size - 1
         }
+
+        Log.d("feng", "----------------- startLine: $startLine, endLine: $endLine, maxLine: ${mLines.size}")
+
         var x = 8.0f
         var y = 24.0f
-        for (lineIndex in startLine .. (endLine - 1)) {
+        for (lineIndex in startLine .. endLine) {
             y += lineHeight
             canvas.drawText(mLines[lineIndex], x,  y, mPaint)
             canvas.drawLine(44.0f, y + mFontMetrics.descent, 300.0f, y + mFontMetrics.descent, mPaint)
