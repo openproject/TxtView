@@ -1,5 +1,6 @@
 package com.example.jay.txtpageviewer
 
+import android.animation.Animator
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
@@ -8,6 +9,9 @@ import android.view.MotionEvent
 import android.view.View
 import com.jayfeng.lesscode.core.DisplayLess
 import java.util.*
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+import android.view.animation.DecelerateInterpolator
 
 
 class TxtPageView : View {
@@ -51,7 +55,11 @@ class TxtPageView : View {
 
 //        println("--------------------- mpage: $mPage ,view height: " + height + ", line height: $lineHeight")
 
-        if (moveX < 0) {
+        if (moveX == 0f) {
+
+            drawPage(canvas, mPage)
+
+        } else if (moveX < 0) {
 
             drawPage(canvas, mPage + 1)
 
@@ -63,11 +71,11 @@ class TxtPageView : View {
             val paint = Paint()
             paint.color = Color.GREEN
             val linearGradient = LinearGradient(
-                    measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
+                    measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
             paint.shader = linearGradient
             canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), paint)
             canvas.restore()
-        } else {
+        } else if (moveX > 0) {
 
             drawPage(canvas, mPage)
 
@@ -80,7 +88,7 @@ class TxtPageView : View {
                 val paint = Paint()
                 paint.color = Color.GREEN
                 val linearGradient = LinearGradient(
-                        measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
+                        measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
                 paint.shader = linearGradient
                 canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), paint)
                 canvas.restore()
@@ -162,6 +170,63 @@ class TxtPageView : View {
         invalidate()
     }
 
+
+    fun prevPageWithAnim() {
+        val animator = ValueAnimator.ofFloat(moveX, width.toFloat())
+        animator.interpolator = DecelerateInterpolator()
+        animator.duration = 500
+        animator.addUpdateListener { va ->
+            moveX = va.animatedValue as Float
+            invalidate()
+        }
+        animator.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationRepeat(animation: Animator?) {
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                prevPage()
+                moveX = 0f
+                animator.cancel()
+            }
+
+        })
+        animator.start()
+    }
+
+    fun nextPageWithAnim() {
+        val animator = ValueAnimator.ofFloat(moveX, -width.toFloat())
+        animator.interpolator = DecelerateInterpolator()
+        animator.duration = 500
+        animator.addUpdateListener { va ->
+            moveX = va.animatedValue as Float
+            invalidate()
+        }
+        animator.addListener(object : Animator.AnimatorListener {
+            override fun onAnimationRepeat(animation: Animator?) {
+            }
+
+            override fun onAnimationCancel(animation: Animator?) {
+            }
+
+            override fun onAnimationStart(animation: Animator?) {
+            }
+
+            override fun onAnimationEnd(animation: Animator?) {
+                nextPage()
+                moveX = 0f
+                animator.cancel()
+            }
+
+        })
+        animator.start()
+    }
+
     var touchX = 0f
     var moveX = 0f
 
@@ -179,6 +244,11 @@ class TxtPageView : View {
             }
             MotionEvent.ACTION_UP -> {
                 touchX = event.rawX
+                if (moveX < 0) {
+                    nextPageWithAnim()
+                } else if (moveX > 0) {
+                    prevPageWithAnim()
+                }
             }
         }
 

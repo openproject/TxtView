@@ -20,10 +20,10 @@ class MainActivity : AppCompatActivity() {
         })
 
         prevPage.setOnClickListener {
-            contentView.prevPage()
+            contentView.prevPageWithAnim()
         }
         nextPage.setOnClickListener {
-            contentView.nextPage()
+            contentView.nextPageWithAnim()
         }
     }
 
