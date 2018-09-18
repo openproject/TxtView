@@ -12,18 +12,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        contentView.post(Runnable {
-            contentView.setContent(content + content + content)
-//            contentView.setContent(content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content
-//                    + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content
-//                    + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content + content)
-        })
+        contentView.post {
+            val sb = StringBuilder()
+            for (i in 1 .. 33) {
+                sb.append(content)
+            }
+            contentView.setContent(sb.toString())
+        }
 
         prevPage.setOnClickListener {
             contentView.prevPageWithAnim()
         }
         nextPage.setOnClickListener {
             contentView.nextPageWithAnim()
+        }
+        firstPage.setOnClickListener {
+            contentView.firstPage()
+        }
+        lastPage.setOnClickListener {
+            contentView.lastPage()
         }
     }
 

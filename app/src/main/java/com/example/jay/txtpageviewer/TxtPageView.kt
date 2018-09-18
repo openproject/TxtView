@@ -9,7 +9,6 @@ import android.view.MotionEvent
 import android.view.View
 import com.jayfeng.lesscode.core.DisplayLess
 import java.util.*
-import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.view.animation.DecelerateInterpolator
 
@@ -23,9 +22,14 @@ class TxtPageView : View {
     var mContent: String = ""
     var mPage: Int = 1
     var mPageSize = 8
+    var mPageTotal = 0
     var mLines = ArrayList<String>()
+    var isPaging = false
 
     var mBg: Bitmap
+
+    var mTouchX = 0f
+    var moveX = 0f
 
     init {
         mPaint.color = Color.parseColor("#424242")
@@ -48,6 +52,7 @@ class TxtPageView : View {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         mPageSize = ((measuredHeight - lineHeight - 4 - 24.0f) / lineHeight).toInt()
+        mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -65,7 +70,7 @@ class TxtPageView : View {
 
             canvas.save()
             canvas.translate(moveX, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, width, height), Rect(0, 0, width, height), mPaint)
+            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mPaint)
 
             drawPage(canvas, mPage)
             val paint = Paint()
@@ -81,7 +86,7 @@ class TxtPageView : View {
 
             canvas.save()
             canvas.translate(moveX - width, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, width, height), Rect(0, 0, width, height), mPaint)
+            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mPaint)
 
             if (mPage > 1) {
                 drawPage(canvas, mPage - 1)
@@ -147,11 +152,13 @@ class TxtPageView : View {
 //            Log.e("feng", "------------------paragraph: " + paragraph)
         }
 
+        mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
+
         println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
     }
 
     private fun getPageInfoString(page: Int): String {
-        return "$page / ${(mLines.size + mPageSize - 1) / mPageSize}"
+        return "$page / $mPageTotal"
     }
 
     fun prevPage() {
@@ -163,15 +170,30 @@ class TxtPageView : View {
     }
 
     fun nextPage() {
-        if (mPageSize * mPage >= mLines.size) {
+        if (mPage >= mPageTotal) {
             return
         }
         mPage++
         invalidate()
     }
 
+    fun firstPage() {
+        mPage = 1
+        invalidate()
+    }
+
+    fun lastPage() {
+        mPage = mPageTotal
+        invalidate()
+    }
+
 
     fun prevPageWithAnim() {
+
+        if (mPage <= 1 || isPaging) {
+            return
+        }
+
         val animator = ValueAnimator.ofFloat(moveX, width.toFloat())
         animator.interpolator = DecelerateInterpolator()
         animator.duration = 500
@@ -193,16 +215,23 @@ class TxtPageView : View {
                 prevPage()
                 moveX = 0f
                 animator.cancel()
+                isPaging = false
             }
 
         })
         animator.start()
+        isPaging = true
     }
 
     fun nextPageWithAnim() {
+
+        if (mPage >= mPageTotal || isPaging) {
+            return
+        }
+
         val animator = ValueAnimator.ofFloat(moveX, -width.toFloat())
         animator.interpolator = DecelerateInterpolator()
-        animator.duration = 500
+        animator.duration = 400
         animator.addUpdateListener { va ->
             moveX = va.animatedValue as Float
             invalidate()
@@ -221,29 +250,34 @@ class TxtPageView : View {
                 nextPage()
                 moveX = 0f
                 animator.cancel()
+                isPaging = false
             }
 
         })
         animator.start()
+        isPaging = true
     }
-
-    var touchX = 0f
-    var moveX = 0f
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                touchX = event.rawX
+                mTouchX = event.rawX
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
-                moveX = event.rawX - touchX
 
-                invalidate()
+                moveX = event.rawX - mTouchX
+                if (mPage == 1 && moveX > 0) {
+                    moveX = 0f
+                } else if (mPage == (mLines.size + mPageSize - 1) / mPageSize && moveX < 0) {
+                    moveX = 0f
+                } else {
+                    invalidate()
+                }
             }
             MotionEvent.ACTION_UP -> {
-                touchX = event.rawX
+                mTouchX = event.rawX
                 if (moveX < 0) {
                     nextPageWithAnim()
                 } else if (moveX > 0) {
