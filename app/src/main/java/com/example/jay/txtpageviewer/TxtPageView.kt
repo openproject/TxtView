@@ -15,17 +15,34 @@ import com.jayfeng.lesscode.core.DisplayLess
 
 class TxtPageView : View {
 
-    var mHeaderPaint = Paint().apply { isAntiAlias = true; }
+    var mHeaderPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.GRAY
+        textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+    }
     val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
     var mFooterPaint = Paint().apply {
         isAntiAlias = true
         color = Color.GRAY
         textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
     }
-    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
+    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(32f) }
 
-    var mContentPaint = Paint()
-    var mTitlePaint = Paint()
+    val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
+    val mPaddingTop: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
+    val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
+    val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
+
+    var mContentPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#424242")
+        textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
+    }
+    var mTitlePaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#424242")
+        textSize = DisplayLess.`$dp2px`(28.0f).toFloat()
+    }
 
     var mContent: String = ""
     var mPage: Int = 1
@@ -33,7 +50,7 @@ class TxtPageView : View {
     val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(10f)}
     var isPaging = false
 
-    var mBg: Bitmap
+    val mBg: Bitmap by lazy { (resources.getDrawable(R.drawable.theme_leather_bg) as BitmapDrawable).bitmap }
 
     var mTouchX = 0f
     var moveX = 0f
@@ -41,21 +58,9 @@ class TxtPageView : View {
     var mPages = ArrayList<Page>()
 
     init {
-        mContentPaint.color = Color.parseColor("#424242")
-        mContentPaint.isAntiAlias = true
-        mContentPaint.textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
-
-        mTitlePaint.color = Color.parseColor("#424242")
-        mTitlePaint.isAntiAlias = true
-        mTitlePaint.textSize = DisplayLess.`$dp2px`(24.0f).toFloat()
-
-        mBg = (resources.getDrawable(R.drawable.theme_leather_bg) as BitmapDrawable).bitmap
     }
 
-    constructor(context: Context?) : super(context) {
-
-    }
-
+    constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
@@ -119,14 +124,9 @@ class TxtPageView : View {
             return
         }
 
-
         val pageData = mPages[page - 1]
         pageData.draw(canvas)
 
-//        val pageInfo = getPageInfoString(page)
-//        val pageInfoWidth = mContentPaint.measureText(pageInfo)
-//
-//        canvas.drawText(pageInfo, width - pageInfoWidth - 8.0f, y + lineHeight, mContentPaint)
     }
 
     fun setContent(content: String) {
@@ -144,7 +144,9 @@ class TxtPageView : View {
     }
 
     private fun parseContent() {
-        val widthPaintLength = mContentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串", false, measuredWidth.toFloat() - 14, null)
+        val contentWidth = measuredWidth.toFloat() - mPaddingLeft - mPaddingRight
+        val widthPaintLength = mContentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
+                false, contentWidth, null)
         mContent.split("\n").forEach { paragraph ->
             var startIndex = 0
             while (startIndex < paragraph.length) {
@@ -154,7 +156,7 @@ class TxtPageView : View {
                 }
 
                 var lineText = paragraph.substring(startIndex, endIndex)
-                while (mContentPaint.measureText(lineText + "好") < (width - 12.0f) && endIndex < paragraph.length) {
+                while (mContentPaint.measureText(lineText + "好") < contentWidth && endIndex < paragraph.length) {
                     endIndex += 1
                     lineText = paragraph.substring(startIndex, endIndex)
                 }
@@ -164,21 +166,26 @@ class TxtPageView : View {
             }
         }
 
-        var page: Page? = null
+        val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "王二狗的那些神话", mPaddingLeft, mPaddingRight)
+        var footer = PageFooter(width, mFooterHeight, mFooterPaint, "", mPaddingLeft, mPaddingRight)
+        val padding = PagePadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom)
+        var page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
+        mPages.add(page)
+
+        // add title
+        page.addLineText("第一章 重新开始", LineType.TITLE)
+
+        // add content
         mLines.forEach { lineText ->
 
-            val isFull = page?.isFull() == true
-            Log.d("feng", "------------- page: $page,  is full: ${isFull}")
-            if (page == null || isFull) {
-
-                val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "标题")
-                val footer = PageFooter(width, mFooterHeight, mFooterPaint, "${mPages.size + 1}")
-                page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer)
-
-                mPages.add(page!!)
+            val isFull = page.isFull()
+            if (isFull) {
+                footer = PageFooter(width, mFooterHeight, mFooterPaint, "", mPaddingLeft, mPaddingRight)
+                page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
+                mPages.add(page)
             }
 
-            page?.addLineText(lineText, LineType.CONTENT)
+            page.addLineText(lineText, LineType.CONTENT)
 
         }
 
@@ -187,10 +194,6 @@ class TxtPageView : View {
         }
 
         Log.d("feng", "ddd")
-    }
-
-    private fun getPageInfoString(page: Int): String {
-        return "$page / ${mPages.size}"
     }
 
     fun prevPage() {

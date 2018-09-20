@@ -9,16 +9,23 @@ enum class LineType {
     CONTENT, TITLE, AD
 }
 
+class PagePadding(val left: Float,
+                  val top: Float,
+                  val right: Float,
+                  val bottom: Float) {
+}
+
 class PageHeader(val width: Int,
                  val height: Int,
                  val paint: Paint,
-                 val text: String) {
+                 val text: String,
+                 val paddingLeft: Float,
+                 val paddingRight: Float) {
 
     fun draw(canvas: Canvas, drawHeight: Float) {
-
-//        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
-        val offset = paint.fontMetrics.bottom - paint.fontMetrics.top
-        canvas.drawText(text, 0f, drawHeight + offset, paint)
+        val textHeight = paint.fontMetrics.descent - paint.fontMetrics.ascent
+        val drawY = drawHeight - paint.ascent() + (height - textHeight) / 2
+        canvas.drawText(text, paddingLeft, drawY, paint)
 
     }
 }
@@ -26,15 +33,20 @@ class PageHeader(val width: Int,
 class PageFooter(val width: Int,
                  val height: Int,
                  val paint: Paint,
-                 var pageInfo: String) {
+                 var pageInfo: String,
+                 val paddingLeft: Float,
+                 val paddingRight: Float) {
 
     fun draw(canvas: Canvas, drawHeight: Float) {
 
-
+//        paint.color = Color.RED
 //        canvas.drawRect(0f, drawHeight, width.toFloat(), drawHeight + height.toFloat(), paint)
         val pageInfoWidth = paint.measureText(pageInfo)
-        val offset = paint.fontMetrics.bottom - paint.fontMetrics.top
-        canvas.drawText(pageInfo, width - pageInfoWidth, drawHeight + offset, paint)
+//        val offset = paint.fontMetrics.ascent
+//        paint.color = Color.BLUE
+        val textHeight = paint.fontMetrics.descent - paint.fontMetrics.ascent
+        val drawY = drawHeight - paint.ascent() + (height - textHeight) / 2
+        canvas.drawText(pageInfo, width - pageInfoWidth - paddingRight, drawY, paint)
 
     }
 }
@@ -46,7 +58,8 @@ class Page(val width: Int,
            val adPaint: Paint,
            val lineSpace: Float,
            val header: PageHeader,
-           val footer: PageFooter) {
+           val footer: PageFooter,
+           val padding: PagePadding) {
 
     private var lines = mutableListOf<Line>()
 
@@ -58,7 +71,7 @@ class Page(val width: Int,
     fun addLineText(text: String, type: LineType) {
         val line = Line()
         line.text = text
-        line.x = 0f
+        line.x = padding.left
         line.y = drawHeight
         line.type = type
         lines.add(line)
@@ -69,8 +82,13 @@ class Page(val width: Int,
                 drawHeight += lineSpace
             }
             LineType.TITLE -> {
-                drawHeight += titleFontMetrics.bottom - titleFontMetrics.top
-                drawHeight += lineSpace
+                val titleTextHeight = titleFontMetrics.bottom - titleFontMetrics.top
+                line.y += titleTextHeight
+                drawHeight += titleTextHeight * 3
+
+                val titleWidth = titlePaint.measureText(text)
+                line.x = (width - padding.left - padding.right - titleWidth) / 2
+
             }
             LineType.AD -> {
 
