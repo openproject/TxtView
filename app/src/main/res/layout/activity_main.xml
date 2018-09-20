@@ -41,7 +41,7 @@
             android:text="尾页" />
     </LinearLayout>
 
-    <com.example.jay.txtpageviewer.TxtPageView
+    <com.jayfeng.txtview.TxtView
         android:id="@+id/contentView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
