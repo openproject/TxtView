@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
+import com.jayfeng.txtview.page.*
 
 
 class TxtPageView : View {
