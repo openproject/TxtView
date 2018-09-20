@@ -3,7 +3,11 @@ package com.example.jay.txtpageviewer
 import android.graphics.drawable.BitmapDrawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import com.jayfeng.lesscode.core.ActivityLess
+import com.jayfeng.txtview.touch.TouchLinstener
+import com.jayfeng.txtview.touch.TouchType
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -19,6 +23,24 @@ class MainActivity : AppCompatActivity() {
         }
         contentView.setContent(sb.toString())
         contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
+        contentView.mTouchLinstener = object : TouchLinstener {
+            override fun onClick(touchType: TouchType) {
+                Log.d("feng", "touch type: ${touchType.name}")
+                when(touchType) {
+                    TouchType.LEFT -> {
+                        contentView.prevPageWithAnim()
+                    }
+                    TouchType.RIGHT -> {
+                        contentView.nextPageWithAnim()
+                    }
+                    TouchType.CENTER -> {
+                        Toast.makeText(this@MainActivity, "点击中部区域，显示菜单", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                    }
+                }
+            }
+        }
 
         prevPage.setOnClickListener {
             contentView.prevPageWithAnim()

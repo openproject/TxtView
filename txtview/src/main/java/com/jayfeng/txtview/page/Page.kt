@@ -80,8 +80,6 @@ class Page(val width: Int,
                 }
                 LineType.AD -> {
 
-                    Log.d("feng", "------- line.y: " + line.y)
-
                     canvas.drawBitmap(line.ad, Rect(0, 0, line.ad!!.width, line.ad!!.height),
                             Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height), adPaint)
 //                    canvas.drawBitmap(line.ad, Rect(0, 0, 100, 100), Rect(0, 0, 100, 100), adPaint)

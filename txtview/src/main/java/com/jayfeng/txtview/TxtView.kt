@@ -9,9 +9,13 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
+import com.jayfeng.lesscode.core.ToastLess
 import com.jayfeng.txtview.page.*
+import com.jayfeng.txtview.touch.TouchLinstener
+import com.jayfeng.txtview.touch.TouchType
 
 class TxtView : View {
 
@@ -44,6 +48,8 @@ class TxtView : View {
     val mShadowGradient: LinearGradient by lazy { LinearGradient(
             measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP) }
 
+    var mTouchLinstener: TouchLinstener? = null
+
     init {
         mHeaderPaint.apply {
             isAntiAlias = true
@@ -58,12 +64,12 @@ class TxtView : View {
         mContentPaint.apply {
             isAntiAlias = true
             color = Color.parseColor("#424242")
-            textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
+            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
         }
         mTitlePaint.apply {
             isAntiAlias = true
             color = Color.parseColor("#424242")
-            textSize = DisplayLess.`$dp2px`(28.0f).toFloat()
+            textSize = DisplayLess.`$dp2px`(24.0f).toFloat()
         }
     }
 
@@ -75,11 +81,11 @@ class TxtView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        if (moveX == 0f) {
+        if (Math.abs(moveX) < ViewConfiguration.getTouchSlop()) {
 
             drawPage(canvas, mPage)
 
-        } else if (moveX < 0) {
+        } else if (moveX < - ViewConfiguration.getTouchSlop()) {
 
             canvas.save()
             canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
@@ -95,7 +101,7 @@ class TxtView : View {
             mShadowPaint.shader = mShadowGradient
             canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), mShadowPaint)
             canvas.restore()
-        } else if (moveX > 0) {
+        } else if (moveX > ViewConfiguration.getTouchSlop()) {
 
             canvas.save()
             canvas.clipRect(moveX, 0f, width.toFloat(), height.toFloat())
@@ -313,10 +319,10 @@ class TxtView : View {
             MotionEvent.ACTION_MOVE -> {
 
                 moveX = event.rawX - mTouchX
-                if (mPage == 1 && moveX > 0) {
-                    moveX = 0f
-                } else if (mPage == mPages.size && moveX < 0) {
-                    moveX = 0f
+                if (mPage == 1 && moveX > ViewConfiguration.getTouchSlop()) {
+//                    moveX = 0f
+                } else if (mPage == mPages.size && moveX < - ViewConfiguration.getTouchSlop()) {
+//                    moveX = 0f
                 } else {
                     invalidate()
                 }
@@ -324,10 +330,18 @@ class TxtView : View {
             MotionEvent.ACTION_UP -> {
 
                 mTouchX = event.rawX
-                if (moveX < 0) {
+                if (moveX < - ViewConfiguration.getTouchSlop()) {
                     nextPageWithAnim()
-                } else if (moveX > 0) {
+                } else if (moveX > ViewConfiguration.getTouchSlop()) {
                     prevPageWithAnim()
+                } else {
+                    var touchType = TouchType.CENTER
+                    if (mTouchX < width * 0.3) {
+                        touchType = TouchType.LEFT
+                    } else if (mTouchX > width * 0.7) {
+                        touchType = TouchType.RIGHT
+                    }
+                    mTouchLinstener?.onClick(touchType)
                 }
             }
         }
