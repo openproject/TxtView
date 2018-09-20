@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sb = StringBuilder()
-        for (i in 1 .. 33) {
+        for (i in 1 .. 1) {
             sb.append(content)
         }
         contentView.setContent(sb.toString())

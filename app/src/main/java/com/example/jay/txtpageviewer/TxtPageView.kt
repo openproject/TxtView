@@ -1,30 +1,36 @@
 package com.example.jay.txtpageviewer
 
 import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import com.jayfeng.lesscode.core.DisplayLess
-import java.util.*
-import android.animation.ValueAnimator
-import android.view.ViewTreeObserver
 import android.view.animation.DecelerateInterpolator
+import com.jayfeng.lesscode.core.DisplayLess
 
 
 class TxtPageView : View {
 
-    var mPaint = Paint()
-    var mFontMetrics: Paint.FontMetrics
-    var lineHeight: Float = 0.0f
+    var mHeaderPaint = Paint().apply { isAntiAlias = true; }
+    val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
+    var mFooterPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.GRAY
+        textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+    }
+    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
+
+    var mContentPaint = Paint()
+    var mTitlePaint = Paint()
 
     var mContent: String = ""
     var mPage: Int = 1
-    var mPageSize = 8
-    var mPageTotal = 0
     var mLines = ArrayList<String>()
+    val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(10f)}
     var isPaging = false
 
     var mBg: Bitmap
@@ -32,25 +38,18 @@ class TxtPageView : View {
     var mTouchX = 0f
     var moveX = 0f
 
+    var mPages = ArrayList<Page>()
+
     init {
-        mPaint.color = Color.parseColor("#424242")
-        mPaint.isAntiAlias = true
-        mPaint.textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
-        mFontMetrics = mPaint.fontMetrics
-        lineHeight = mFontMetrics.bottom - mFontMetrics.top
+        mContentPaint.color = Color.parseColor("#424242")
+        mContentPaint.isAntiAlias = true
+        mContentPaint.textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
+
+        mTitlePaint.color = Color.parseColor("#424242")
+        mTitlePaint.isAntiAlias = true
+        mTitlePaint.textSize = DisplayLess.`$dp2px`(24.0f).toFloat()
 
         mBg = (resources.getDrawable(R.drawable.theme_leather_bg) as BitmapDrawable).bitmap
-
-        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener{
-            override fun onPreDraw(): Boolean {
-                viewTreeObserver.removeOnPreDrawListener(this)
-
-                mPageSize = ((measuredHeight - lineHeight - 4 - 24.0f) / lineHeight).toInt()
-
-                return true
-            }
-
-        })
     }
 
     constructor(context: Context?) : super(context) {
@@ -80,7 +79,7 @@ class TxtPageView : View {
 
             canvas.save()
             canvas.translate(moveX, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mPaint)
+            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mContentPaint)
 
             drawPage(canvas, mPage)
             val paint = Paint()
@@ -96,7 +95,7 @@ class TxtPageView : View {
 
             canvas.save()
             canvas.translate(moveX - width, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mPaint)
+            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mContentPaint)
 
             if (mPage > 1) {
                 drawPage(canvas, mPage - 1)
@@ -113,26 +112,21 @@ class TxtPageView : View {
 
     fun drawPage(canvas: Canvas, page: Int) {
 
-        var startLine = (page - 1) * mPageSize
-        var endLine = startLine + mPageSize - 1
-        if (endLine > mLines.size - 1) {
-            endLine = mLines.size - 1
+
+        Log.d("feng", "------- page: $page")
+
+        if (page > mPages.size) {
+            return
         }
 
-//        Log.d("feng", "----------------- startLine: $startLine, endLine: $endLine, maxLine: ${mLines.size}")
 
-        var x = 8.0f
-        var y = 24.0f
-        for (lineIndex in startLine..endLine) {
-            y += lineHeight
-            canvas.drawText(mLines[lineIndex], x, y, mPaint)
-            canvas.drawLine(44.0f, y + mFontMetrics.descent, 300.0f, y + mFontMetrics.descent, mPaint)
-        }
+        val pageData = mPages[page - 1]
+        pageData.draw(canvas)
 
-        val pageInfo = getPageInfoString(page)
-        val pageInfoWidth = mPaint.measureText(pageInfo)
-
-        canvas.drawText(pageInfo, width - pageInfoWidth - 8.0f, y + lineHeight, mPaint)
+//        val pageInfo = getPageInfoString(page)
+//        val pageInfoWidth = mContentPaint.measureText(pageInfo)
+//
+//        canvas.drawText(pageInfo, width - pageInfoWidth - 8.0f, y + lineHeight, mContentPaint)
     }
 
     fun setContent(content: String) {
@@ -140,38 +134,63 @@ class TxtPageView : View {
 
         post {
             val startTime = System.currentTimeMillis()
-            val widthPaintLength = mPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串", false, measuredWidth.toFloat() - 14, null)
-            mContent.split("\n").forEach { paragraph ->
-                var startIndex = 0
-                while (startIndex < paragraph.length) {
-                    var endIndex = startIndex + widthPaintLength
-                    if (endIndex > paragraph.length) {
-                        endIndex = paragraph.length
-                    }
 
-//                Log.e("feng","------ 1startIndex: $startIndex, endIndex: $endIndex")
+            parseContent()
 
-                    var line = paragraph.substring(startIndex, endIndex)
-                    while (mPaint.measureText(line + "好") < (width - 12.0f) && endIndex < paragraph.length) {
-                        endIndex += 1
-                        line = paragraph.substring(startIndex, endIndex)
-                    }
-                    mLines.add(line)
-                    startIndex = endIndex
-                }
-
-//            Log.e("feng", "------------------paragraph: " + paragraph)
-            }
-
-            mPageTotal = (mLines.size + mPageSize - 1) / mPageSize
             invalidate()
 
             println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
         }
     }
 
+    private fun parseContent() {
+        val widthPaintLength = mContentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串", false, measuredWidth.toFloat() - 14, null)
+        mContent.split("\n").forEach { paragraph ->
+            var startIndex = 0
+            while (startIndex < paragraph.length) {
+                var endIndex = startIndex + widthPaintLength
+                if (endIndex > paragraph.length) {
+                    endIndex = paragraph.length
+                }
+
+                var lineText = paragraph.substring(startIndex, endIndex)
+                while (mContentPaint.measureText(lineText + "好") < (width - 12.0f) && endIndex < paragraph.length) {
+                    endIndex += 1
+                    lineText = paragraph.substring(startIndex, endIndex)
+                }
+
+                mLines.add(lineText)
+                startIndex = endIndex
+            }
+        }
+
+        var page: Page? = null
+        mLines.forEach { lineText ->
+
+            val isFull = page?.isFull() == true
+            Log.d("feng", "------------- page: $page,  is full: ${isFull}")
+            if (page == null || isFull) {
+
+                val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "标题")
+                val footer = PageFooter(width, mFooterHeight, mFooterPaint, "${mPages.size + 1}")
+                page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer)
+
+                mPages.add(page!!)
+            }
+
+            page?.addLineText(lineText, LineType.CONTENT)
+
+        }
+
+        mPages.forEachIndexed{ index, page ->
+            page.updateFooter(index + 1, mPages.size)
+        }
+
+        Log.d("feng", "ddd")
+    }
+
     private fun getPageInfoString(page: Int): String {
-        return "$page / $mPageTotal"
+        return "$page / ${mPages.size}"
     }
 
     fun prevPage() {
@@ -183,7 +202,7 @@ class TxtPageView : View {
     }
 
     fun nextPage() {
-        if (mPage >= mPageTotal) {
+        if (mPage > mPages.size) {
             return
         }
         mPage++
@@ -196,7 +215,7 @@ class TxtPageView : View {
     }
 
     fun lastPage() {
-        mPage = mPageTotal
+        mPage = mPages.size
         invalidate()
     }
 
@@ -238,7 +257,9 @@ class TxtPageView : View {
 
     fun nextPageWithAnim() {
 
-        if (mPage >= mPageTotal || isPaging) {
+        Log.d("feng", "--------- mPage: $mPage , size: ${mPages.size}")
+
+        if (mPage > mPages.size - 1 || isPaging) {
             return
         }
 
@@ -275,6 +296,7 @@ class TxtPageView : View {
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+
                 mTouchX = event.rawX
                 return true
             }
@@ -283,13 +305,14 @@ class TxtPageView : View {
                 moveX = event.rawX - mTouchX
                 if (mPage == 1 && moveX > 0) {
                     moveX = 0f
-                } else if (mPage == (mLines.size + mPageSize - 1) / mPageSize && moveX < 0) {
+                } else if (mPage == mPages.size && moveX < 0) {
                     moveX = 0f
                 } else {
                     invalidate()
                 }
             }
             MotionEvent.ACTION_UP -> {
+
                 mTouchX = event.rawX
                 if (moveX < 0) {
                     nextPageWithAnim()
