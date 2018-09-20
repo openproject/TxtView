@@ -35,7 +35,7 @@ class TxtView : View {
     var mContent: String = ""
     var mPage: Int = 1
     var mLines = ArrayList<String>()
-    val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(10f)}
+    val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f)}
     var isPaging = false
 
     var mTouchX = 0f
@@ -54,17 +54,17 @@ class TxtView : View {
         mHeaderPaint.apply {
             isAntiAlias = true
             color = Color.GRAY
-            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+            textSize = DisplayLess.`$dp2px`(14.0f).toFloat()
         }
         mFooterPaint.apply {
             isAntiAlias = true
             color = Color.GRAY
-            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+            textSize = DisplayLess.`$dp2px`(14.0f).toFloat()
         }
         mContentPaint.apply {
             isAntiAlias = true
             color = Color.parseColor("#424242")
-            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+            textSize = DisplayLess.`$dp2px`(17.0f).toFloat()
         }
         mTitlePaint.apply {
             isAntiAlias = true
@@ -196,7 +196,7 @@ class TxtView : View {
             page.addLineText(lineText, LineType.CONTENT)
             pageLineIndex++
 
-            if (pageLineIndex % 10 == 0) {
+            if (pageLineIndex % 8 == 0) {
                 page.addLineAd(mAdBitmap!!)
             }
 
@@ -323,11 +323,11 @@ class TxtView : View {
 //                    moveX = 0f
                 } else if (mPage == mPages.size && moveX < - ViewConfiguration.getTouchSlop()) {
 //                    moveX = 0f
-                } else {
+                } else if (Math.abs(moveX) > ViewConfiguration.getTouchSlop()){
                     invalidate()
                 }
             }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 
                 mTouchX = event.rawX
                 if (moveX < - ViewConfiguration.getTouchSlop()) {

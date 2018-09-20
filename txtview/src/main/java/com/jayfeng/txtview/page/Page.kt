@@ -62,7 +62,7 @@ class Page(val width: Int,
         lines.add(line)
 
         drawHeight += bitmap.height
-        drawHeight += lineSpace * 2
+        drawHeight += lineSpace * 2 + (contentPaint.descent() - contentPaint.ascent())
     }
 
     fun draw(canvas: Canvas) {
@@ -96,7 +96,7 @@ class Page(val width: Int,
 
     fun isFull() : Boolean {
 
-        return drawHeight - (contentFontMetrics.bottom - contentFontMetrics.top)> height - header.height - footer.height
+        return drawHeight - (contentFontMetrics.descent - contentFontMetrics.ascent)> height - header.height - footer.height
     }
 
 }
