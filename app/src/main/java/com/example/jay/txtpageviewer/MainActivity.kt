@@ -1,5 +1,6 @@
 package com.example.jay.txtpageviewer
 
+import android.graphics.drawable.BitmapDrawable
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import com.jayfeng.lesscode.core.ActivityLess
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
             sb.append(content)
         }
         contentView.setContent(sb.toString())
+        contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
 
         prevPage.setOnClickListener {
             contentView.prevPageWithAnim()

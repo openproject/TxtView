@@ -15,17 +15,9 @@ import com.jayfeng.txtview.page.*
 
 class TxtView : View {
 
-    var mHeaderPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.GRAY
-        textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
-    }
+    var mHeaderPaint = Paint()
     val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
-    var mFooterPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.GRAY
-        textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
-    }
+    var mFooterPaint = Paint()
     val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(32f) }
 
     val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
@@ -33,16 +25,8 @@ class TxtView : View {
     val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
     val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
 
-    var mContentPaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.parseColor("#424242")
-        textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
-    }
-    var mTitlePaint = Paint().apply {
-        isAntiAlias = true
-        color = Color.parseColor("#424242")
-        textSize = DisplayLess.`$dp2px`(28.0f).toFloat()
-    }
+    var mContentPaint = Paint()
+    var mTitlePaint = Paint()
 
     var mContent: String = ""
     var mPage: Int = 1
@@ -53,11 +37,35 @@ class TxtView : View {
     var mTouchX = 0f
     var moveX = 0f
 
+    var mAdBitmap: Bitmap? = null
+
     var mPages = ArrayList<Page>()
     val mShadowPaint = Paint()
     val mShadowGradient: LinearGradient by lazy { LinearGradient(
             measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP) }
 
+    init {
+        mHeaderPaint.apply {
+            isAntiAlias = true
+            color = Color.GRAY
+            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+        }
+        mFooterPaint.apply {
+            isAntiAlias = true
+            color = Color.GRAY
+            textSize = DisplayLess.`$dp2px`(16.0f).toFloat()
+        }
+        mContentPaint.apply {
+            isAntiAlias = true
+            color = Color.parseColor("#424242")
+            textSize = DisplayLess.`$dp2px`(18.0f).toFloat()
+        }
+        mTitlePaint.apply {
+            isAntiAlias = true
+            color = Color.parseColor("#424242")
+            textSize = DisplayLess.`$dp2px`(28.0f).toFloat()
+        }
+    }
 
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
@@ -67,14 +75,11 @@ class TxtView : View {
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-//        println("--------------------- mpage: $mPage ,view height: " + height + ", line height: $lineHeight")
-
         if (moveX == 0f) {
 
             drawPage(canvas, mPage)
 
         } else if (moveX < 0) {
-
 
             canvas.save()
             canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
@@ -171,16 +176,23 @@ class TxtView : View {
         page.addLineText("第一章 重新开始", LineType.TITLE)
 
         // add content
+        var pageLineIndex = 0
         mLines.forEach { lineText ->
 
             val isFull = page.isFull()
             if (isFull) {
+                pageLineIndex = 0
                 footer = PageFooter(width, mFooterHeight, mFooterPaint, "", mPaddingLeft, mPaddingRight)
                 page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
                 mPages.add(page)
             }
 
             page.addLineText(lineText, LineType.CONTENT)
+            pageLineIndex++
+
+            if (pageLineIndex % 10 == 0) {
+                page.addLineAd(mAdBitmap!!)
+            }
 
         }
 

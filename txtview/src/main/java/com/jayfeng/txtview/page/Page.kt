@@ -1,7 +1,9 @@
 package com.jayfeng.txtview.page
 
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.graphics.Rect
 import android.util.Log
 
 class Page(val width: Int,
@@ -44,11 +46,23 @@ class Page(val width: Int,
 
             }
             LineType.AD -> {
-
+                // NOT SUPPORT
             }
         }
 
         Log.e("feng", "--- drawHeight: " + drawHeight)
+    }
+
+    fun addLineAd(bitmap: Bitmap) {
+        val line = Line()
+        line.ad = bitmap
+        line.x = 0f
+        line.y = drawHeight
+        line.type = LineType.AD
+        lines.add(line)
+
+        drawHeight += bitmap.height
+        drawHeight += lineSpace * 2
     }
 
     fun draw(canvas: Canvas) {
@@ -65,7 +79,12 @@ class Page(val width: Int,
                     canvas.drawText(line.text, line.x, line.y, titlePaint)
                 }
                 LineType.AD -> {
-                    // draw ad view
+
+                    Log.d("feng", "------- line.y: " + line.y)
+
+                    canvas.drawBitmap(line.ad, Rect(0, 0, line.ad!!.width, line.ad!!.height),
+                            Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height), adPaint)
+//                    canvas.drawBitmap(line.ad, Rect(0, 0, 100, 100), Rect(0, 0, 100, 100), adPaint)
                 }
             }
         }
