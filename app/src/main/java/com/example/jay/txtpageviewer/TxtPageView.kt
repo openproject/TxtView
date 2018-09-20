@@ -51,13 +51,19 @@ class TxtPageView : View {
     var isPaging = false
 
     val mBg: Bitmap by lazy { (resources.getDrawable(R.drawable.theme_leather_bg) as BitmapDrawable).bitmap }
+    val mBgSrcRect: Rect by lazy { Rect(0, 0, mBg.width, mBg.height) }
+    val mBgDestRect: Rect by lazy { Rect(0, 0, width, height) }
 
     var mTouchX = 0f
     var moveX = 0f
 
     var mPages = ArrayList<Page>()
+    val mShadowPaint = Paint()
+    val mShadowGradient: LinearGradient by lazy { LinearGradient(
+            measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP) }
 
     init {
+
     }
 
     constructor(context: Context?) : super(context)
@@ -80,38 +86,38 @@ class TxtPageView : View {
 
         } else if (moveX < 0) {
 
-            drawPage(canvas, mPage + 1)
 
             canvas.save()
+            canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
+            drawPage(canvas, mPage + 1)
+            canvas.restore()
+
+            canvas.save()
+
             canvas.translate(moveX, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mContentPaint)
+            canvas.drawBitmap(mBg, mBgSrcRect, mBgDestRect, mContentPaint)
 
             drawPage(canvas, mPage)
-            val paint = Paint()
-            paint.color = Color.GREEN
-            val linearGradient = LinearGradient(
-                    measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
-            paint.shader = linearGradient
-            canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), paint)
+            mShadowPaint.shader = mShadowGradient
+            canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), mShadowPaint)
             canvas.restore()
         } else if (moveX > 0) {
 
+            canvas.save()
+            canvas.clipRect(moveX, 0f, width.toFloat(), height.toFloat())
             drawPage(canvas, mPage)
+            canvas.restore()
 
             canvas.save()
             canvas.translate(moveX - width, 0f)
-            canvas.drawBitmap(mBg, Rect(0, 0, mBg.width, mBg.height), Rect(0, 0, width, height), mContentPaint)
+            canvas.drawBitmap(mBg, mBgSrcRect, mBgDestRect, mContentPaint)
 
             if (mPage > 1) {
                 drawPage(canvas, mPage - 1)
-                val paint = Paint()
-                paint.color = Color.GREEN
-                val linearGradient = LinearGradient(
-                        measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
-                paint.shader = linearGradient
-                canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), paint)
-                canvas.restore()
+                mShadowPaint.shader = mShadowGradient
+                canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), mShadowPaint)
             }
+            canvas.restore()
         }
     }
 
