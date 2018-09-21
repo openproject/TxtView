@@ -4,7 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
-import android.util.Log
+import java.text.SimpleDateFormat
+import java.util.*
 
 class Page(val width: Int,
            val height: Int,
@@ -16,15 +17,26 @@ class Page(val width: Int,
            val footer: PageFooter,
            val padding: PagePadding) {
 
+    companion object {
+        var pageTime = "00:00"
+
+        fun updateTime() {
+            val time = System.currentTimeMillis()
+            val dateFormat = SimpleDateFormat("HH:mm")
+            pageTime = dateFormat.format(Date(time))
+        }
+
+    }
+
     private var lines = mutableListOf<Line>()
 
     private var contentFontMetrics: Paint.FontMetrics = contentPaint.fontMetrics
     private var titleFontMetrics: Paint.FontMetrics = titlePaint.fontMetrics
 
-    var drawHeight = header.height.toFloat() + (contentFontMetrics.bottom - contentFontMetrics.top)
+    private var drawHeight = header.height.toFloat() + (contentFontMetrics.bottom - contentFontMetrics.top)
 
-    var adSrcRect: Rect? = null
-    var adDestRect: Rect? = null
+    private var adSrcRect: Rect? = null
+    private var adDestRect: Rect? = null
 
     fun addLineText(text: String, type: LineType) {
         val line = Line()
@@ -45,7 +57,7 @@ class Page(val width: Int,
                 drawHeight += titleTextHeight * 3
 
                 val titleWidth = titlePaint.measureText(text)
-                line.x = (width + padding.left - padding.right- titleWidth) / 2
+                line.x = (width + padding.left - padding.right - titleWidth) / 2
 
             }
             LineType.AD -> {
@@ -94,9 +106,9 @@ class Page(val width: Int,
         footer.pageInfo = "$pageIndex / $pageTotal"
     }
 
-    fun isFull() : Boolean {
+    fun isFull(): Boolean {
 
-        return drawHeight - (contentFontMetrics.descent - contentFontMetrics.ascent)> height - header.height - footer.height
+        return drawHeight - (contentFontMetrics.descent - contentFontMetrics.ascent) > height - header.height - footer.height
     }
 
 }

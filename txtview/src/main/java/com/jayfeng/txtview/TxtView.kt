@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -12,7 +11,6 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
-import com.jayfeng.lesscode.core.ToastLess
 import com.jayfeng.txtview.page.*
 import com.jayfeng.txtview.touch.TouchLinstener
 import com.jayfeng.txtview.touch.TouchType
@@ -36,7 +34,7 @@ class TxtView : View {
     var mPage: Int = 1
     var mLines = ArrayList<String>()
     val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f)}
-    var isPaging = false
+    var mIsPaging = false
 
     var mTouchX = 0f
     var moveX = 0f
@@ -136,6 +134,10 @@ class TxtView : View {
 
     }
 
+    fun setTxtFile(path: String) {
+        // NEXT PLAN
+    }
+
     fun setContent(content: String) {
         this.mContent = content
 
@@ -229,6 +231,8 @@ class TxtView : View {
                 page.updateFooter(index + 1, mPages.size)
             }
         }
+
+        Page.updateTime()
     }
 
     fun prevPage() {
@@ -236,6 +240,7 @@ class TxtView : View {
         if (mPage <= 0) {
             mPage = 1
         }
+        Page.updateTime()
         invalidate()
     }
 
@@ -244,6 +249,7 @@ class TxtView : View {
             return
         }
         mPage++
+        Page.updateTime()
         invalidate()
     }
 
@@ -260,7 +266,7 @@ class TxtView : View {
 
     fun prevPageWithAnim() {
 
-        if (mPage <= 1 || isPaging) {
+        if (mPage <= 1 || mIsPaging) {
             return
         }
 
@@ -285,17 +291,17 @@ class TxtView : View {
                 prevPage()
                 moveX = 0f
                 animator.cancel()
-                isPaging = false
+                mIsPaging = false
             }
 
         })
         animator.start()
-        isPaging = true
+        mIsPaging = true
     }
 
     fun nextPageWithAnim() {
 
-        if (mPage > mPages.size - 1 || isPaging) {
+        if (mPage > mPages.size - 1 || mIsPaging) {
             return
         }
 
@@ -320,12 +326,12 @@ class TxtView : View {
                 nextPage()
                 moveX = 0f
                 animator.cancel()
-                isPaging = false
+                mIsPaging = false
             }
 
         })
         animator.start()
-        isPaging = true
+        mIsPaging = true
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
