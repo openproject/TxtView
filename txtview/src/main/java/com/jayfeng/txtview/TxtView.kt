@@ -46,7 +46,12 @@ class TxtView : View {
     var mPages = ArrayList<Page>()
     val mShadowPaint = Paint()
     val mShadowGradient: LinearGradient by lazy { LinearGradient(
-            measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 20.0f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP) }
+            measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 16f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)}
+    val mShadowRect: Rect by lazy {
+        Rect(measuredWidth, 0, measuredWidth + 16, measuredHeight).apply {
+            mShadowPaint.shader = mShadowGradient
+        }
+    }
 
     var mTouchLinstener: TouchLinstener? = null
 
@@ -77,9 +82,7 @@ class TxtView : View {
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
 
         if (Math.abs(moveX) < ViewConfiguration.getTouchSlop()) {
 
@@ -98,8 +101,7 @@ class TxtView : View {
             background.draw(canvas)
 
             drawPage(canvas, mPage)
-            mShadowPaint.shader = mShadowGradient
-            canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), mShadowPaint)
+            canvas.drawRect(mShadowRect, mShadowPaint)
             canvas.restore()
         } else if (moveX > ViewConfiguration.getTouchSlop()) {
 
@@ -114,17 +116,13 @@ class TxtView : View {
 
             if (mPage > 1) {
                 drawPage(canvas, mPage - 1)
-                mShadowPaint.shader = mShadowGradient
-                canvas.drawRect(measuredWidth.toFloat(), 0.0f, measuredWidth.toFloat() + 20.0f, measuredHeight.toFloat(), mShadowPaint)
+                canvas.drawRect(mShadowRect, mShadowPaint)
             }
             canvas.restore()
         }
     }
 
     fun drawPage(canvas: Canvas, page: Int) {
-
-
-        Log.d("feng", "------- page: $page")
 
         if (page > mPages.size) {
             return
@@ -139,13 +137,15 @@ class TxtView : View {
         this.mContent = content
 
         post {
-            val startTime = System.currentTimeMillis()
+            Thread {
+                val startTime = System.currentTimeMillis()
 
-            parseContent()
+                parseContent()
 
-            invalidate()
+                postInvalidate()
 
-            println("--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
+                Log.d("feng", "--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
+            }.start()
         }
     }
 
@@ -173,7 +173,7 @@ class TxtView : View {
         }
 
         val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "王二狗的那些神话", mPaddingLeft, mPaddingRight)
-        var footer = PageFooter(width, mFooterHeight, mFooterPaint, "", mPaddingLeft, mPaddingRight)
+        var footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
         val padding = PagePadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom)
         var page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
         mPages.add(page)
@@ -188,7 +188,7 @@ class TxtView : View {
             val isFull = page.isFull()
             if (isFull) {
                 pageLineIndex = 0
-                footer = PageFooter(width, mFooterHeight, mFooterPaint, "", mPaddingLeft, mPaddingRight)
+                footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
                 page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
                 mPages.add(page)
             }
@@ -196,7 +196,7 @@ class TxtView : View {
             page.addLineText(lineText, LineType.CONTENT)
             pageLineIndex++
 
-            if (pageLineIndex % 8 == 0) {
+            if (pageLineIndex % 12 == 0) {
                 page.addLineAd(mAdBitmap!!)
             }
 
@@ -205,8 +205,6 @@ class TxtView : View {
         mPages.forEachIndexed{ index, page ->
             page.updateFooter(index + 1, mPages.size)
         }
-
-        Log.d("feng", "ddd")
     }
 
     fun prevPage() {
@@ -272,8 +270,6 @@ class TxtView : View {
     }
 
     fun nextPageWithAnim() {
-
-        Log.d("feng", "--------- mPage: $mPage , size: ${mPages.size}")
 
         if (mPage > mPages.size - 1 || isPaging) {
             return

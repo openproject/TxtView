@@ -23,6 +23,9 @@ class Page(val width: Int,
 
     var drawHeight = header.height.toFloat() + (contentFontMetrics.bottom - contentFontMetrics.top)
 
+    var adSrcRect: Rect? = null
+    var adDestRect: Rect? = null
+
     fun addLineText(text: String, type: LineType) {
         val line = Line()
         line.text = text
@@ -49,8 +52,6 @@ class Page(val width: Int,
                 // NOT SUPPORT
             }
         }
-
-        Log.e("feng", "--- drawHeight: " + drawHeight)
     }
 
     fun addLineAd(bitmap: Bitmap) {
@@ -63,6 +64,9 @@ class Page(val width: Int,
 
         drawHeight += bitmap.height
         drawHeight += lineSpace * 2 + (contentPaint.descent() - contentPaint.ascent())
+
+        adSrcRect = Rect(0, 0, line.ad!!.width, line.ad!!.height)
+        adDestRect = Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height)
     }
 
     fun draw(canvas: Canvas) {
@@ -79,10 +83,7 @@ class Page(val width: Int,
                     canvas.drawText(line.text, line.x, line.y, titlePaint)
                 }
                 LineType.AD -> {
-
-                    canvas.drawBitmap(line.ad, Rect(0, 0, line.ad!!.width, line.ad!!.height),
-                            Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height), adPaint)
-//                    canvas.drawBitmap(line.ad, Rect(0, 0, 100, 100), Rect(0, 0, 100, 100), adPaint)
+                    canvas.drawBitmap(line.ad, adSrcRect, adDestRect, adPaint)
                 }
             }
         }

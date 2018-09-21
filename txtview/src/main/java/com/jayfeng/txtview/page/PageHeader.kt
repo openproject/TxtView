@@ -10,9 +10,11 @@ class PageHeader(val width: Int,
                  val paddingLeft: Float,
                  val paddingRight: Float) {
 
+    val textHeight = paint.fontMetrics.descent - paint.fontMetrics.ascent
+    val textOffset = (paint.ascent() - (height - textHeight) / 2)
+
     fun draw(canvas: Canvas, drawHeight: Float) {
-        val textHeight = paint.fontMetrics.descent - paint.fontMetrics.ascent
-        val drawY = drawHeight - paint.ascent() + (height - textHeight) / 2
+        val drawY = drawHeight - textOffset
         canvas.drawText(text, paddingLeft, drawY, paint)
 
     }
