@@ -20,9 +20,9 @@ import com.jayfeng.txtview.touch.TouchType
 class TxtView : View {
 
     var mHeaderPaint = Paint()
-    val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(44f) }
+    val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
     var mFooterPaint = Paint()
-    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(32f) }
+    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
 
     val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
     val mPaddingTop: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }

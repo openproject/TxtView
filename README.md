@@ -1,6 +1,20 @@
 # TxtView
 
-TxtView 是 TXT 阅读渲染视图，具备智能分页功能，目标是逐步追求高性能。
+TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在低端手机也能流畅如丝。
+
+体验地址：![点击下载](release/app-release-v0.1.apk)
+
+
+## 功能
+
+- 智能分页
+- 手势回调
+
+## 效果图
+
+![Screenshot](release/screenshot_normal.png)
+![Screenshot](release/screenshot_gpu.png)
+
 
 ## NEXT PLAN
 

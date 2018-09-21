@@ -45,7 +45,7 @@ class Page(val width: Int,
                 drawHeight += titleTextHeight * 3
 
                 val titleWidth = titlePaint.measureText(text)
-                line.x = (width - padding.left - padding.right - titleWidth) / 2
+                line.x = (width + padding.left - padding.right- titleWidth) / 2
 
             }
             LineType.AD -> {
@@ -77,7 +77,6 @@ class Page(val width: Int,
             when (line.type) {
                 LineType.CONTENT -> {
                     canvas.drawText(line.text, line.x, line.y, contentPaint)
-
                 }
                 LineType.TITLE -> {
                     canvas.drawText(line.text, line.x, line.y, titlePaint)
