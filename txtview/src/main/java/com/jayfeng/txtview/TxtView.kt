@@ -150,9 +150,11 @@ class TxtView : View {
     }
 
     private fun parseContent() {
+
         val contentWidth = measuredWidth.toFloat() - mPaddingLeft - mPaddingRight
         val widthPaintLength = mContentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
                 false, contentWidth, null)
+        var preloadPage = true
         mContent.split("\n").forEach { paragraph ->
             var startIndex = 0
             while (startIndex < paragraph.length) {
@@ -170,7 +172,19 @@ class TxtView : View {
                 mLines.add(lineText)
                 startIndex = endIndex
             }
+
+            if (preloadPage && mLines.size > 24) {
+                parseLineToPage(true)
+                postInvalidate()
+                preloadPage = false
+            }
         }
+
+        mPages.clear()
+        parseLineToPage(false)
+    }
+
+    private fun parseLineToPage(preload : Boolean) {
 
         val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "王二狗的那些神话", mPaddingLeft, mPaddingRight)
         var footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
@@ -202,8 +216,10 @@ class TxtView : View {
 
         }
 
-        mPages.forEachIndexed{ index, page ->
-            page.updateFooter(index + 1, mPages.size)
+        if (!preload) {
+            mPages.forEachIndexed { index, page ->
+                page.updateFooter(index + 1, mPages.size)
+            }
         }
     }
 
