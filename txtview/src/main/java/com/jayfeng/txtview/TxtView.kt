@@ -24,9 +24,9 @@ class TxtView : View {
     var mFooterPaint = Paint()
     val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
 
-    val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
+    val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
     val mPaddingTop: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
-    val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(24f).toFloat() }
+    val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
     val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
 
     var mContentPaint = Paint()
@@ -52,6 +52,9 @@ class TxtView : View {
             mShadowPaint.shader = mShadowGradient
         }
     }
+
+    private val mPunctuationSet: Set<Char> = setOf('，', '。', '？', '！', '：', '“', '”',
+            ',', '.', '?', '!', ':', '"')
 
     var mTouchLinstener: TouchLinstener? = null
 
@@ -165,6 +168,11 @@ class TxtView : View {
 
                 var lineText = paragraph.substring(startIndex, endIndex)
                 while (mContentPaint.measureText(lineText + "好") < contentWidth && endIndex < paragraph.length) {
+                    endIndex += 1
+                    lineText = paragraph.substring(startIndex, endIndex)
+                }
+
+                if (endIndex < paragraph.length && mPunctuationSet.contains(paragraph[endIndex])) {
                     endIndex += 1
                     lineText = paragraph.substring(startIndex, endIndex)
                 }

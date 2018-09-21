@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         val sb = StringBuilder()
         for (i in 1 .. 100) {
             sb.append(content)
+            sb.append("\n\n")
         }
         contentView.setContent(sb.toString())
         contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
