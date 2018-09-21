@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
+import com.jayfeng.lesscode.core.FileLess
 import com.jayfeng.txtview.page.*
 import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
@@ -137,6 +138,8 @@ class TxtView : View {
 
     fun setTxtFile(path: String) {
         // NEXT PLAN
+
+        setContent(FileLess.`$read`(context.resources.assets.open("demo.txt")))
     }
 
     fun setContent(content: String) {

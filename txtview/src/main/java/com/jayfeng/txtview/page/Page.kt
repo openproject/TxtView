@@ -81,15 +81,15 @@ class Page(val width: Int,
         line.type = LineType.AD
         lines.add(line)
 
-        drawHeight += bitmap.height
+        val scaleHeight = width * bitmap.height / bitmap.width
+
+        drawHeight += scaleHeight
         drawHeight += lineSpace * 2 + (contentPaint.descent() - contentPaint.ascent())
 
 
         hasAd = true
         adYStart = line.y
         adYEnd = drawHeight
-
-        val scaleHeight = width * bitmap.height / bitmap.width
         adSrcRect = Rect(0, 0, bitmap.width, bitmap.height)
         adDestRect = Rect(0, line.y.toInt(), width, line.y.toInt() + scaleHeight)
     }

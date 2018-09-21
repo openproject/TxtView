@@ -24,7 +24,8 @@ class MainActivity : AppCompatActivity() {
             sb.append("\n\n")
         }
         // 设置文本内容
-        contentView.setContent(sb.toString())
+        // contentView.setContent(sb.toString())
+        contentView.setTxtFile("")
         // 设置广告图片
         contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
         // 设置手势回调

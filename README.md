@@ -20,6 +20,8 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ## NEXT PLAN
 
+- 阅读记录
+- 设置字体
 - 使用 Builder 模式友好化 TxtView 的使用
 - 导入大文件 TXT 处理
 - 备注功能
