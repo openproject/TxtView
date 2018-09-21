@@ -12,40 +12,41 @@ import android.view.ViewConfiguration
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
 import com.jayfeng.txtview.page.*
-import com.jayfeng.txtview.touch.TouchLinstener
+import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
 
 class TxtView : View {
 
-    var mHeaderPaint = Paint()
-    val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
-    var mFooterPaint = Paint()
-    val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
+    private var mHeaderPaint = Paint()
+    private val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
+    private var mFooterPaint = Paint()
+    private val mFooterHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
 
-    val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
-    val mPaddingTop: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
-    val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
-    val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
+    private val mPaddingLeft: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
+    private val mPaddingTop: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
+    private val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
+    private val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
 
-    var mContentPaint = Paint()
-    var mTitlePaint = Paint()
+    private var mContentPaint = Paint()
+    private var mTitlePaint = Paint()
 
-    var mContent: String = ""
-    var mPage: Int = 1
-    var mLines = ArrayList<String>()
-    val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f)}
-    var mIsPaging = false
+    private var mContent: String = ""
+    private var mPage: Int = 1
+    private var mLines = ArrayList<String>()
+    private val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f)}
+    private var mIsPaging = false
 
-    var mTouchX = 0f
-    var moveX = 0f
+    private var mTouchX = 0f
+    private var mTouchY = 0f
+    private var moveX = 0f
 
     var mAdBitmap: Bitmap? = null
 
-    var mPages = ArrayList<Page>()
-    val mShadowPaint = Paint()
-    val mShadowGradient: LinearGradient by lazy { LinearGradient(
+    private var mPages = ArrayList<Page>()
+    private val mShadowPaint = Paint()
+    private val mShadowGradient: LinearGradient by lazy { LinearGradient(
             measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 16f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)}
-    val mShadowRect: Rect by lazy {
+    private val mShadowRect: Rect by lazy {
         Rect(measuredWidth, 0, measuredWidth + 16, measuredHeight).apply {
             mShadowPaint.shader = mShadowGradient
         }
@@ -54,7 +55,7 @@ class TxtView : View {
     private val mPunctuationSet: Set<Char> = setOf('，', '。', '？', '！', '：', '“', '”',
             ',', '.', '?', '!', ':', '"')
 
-    var mTouchLinstener: TouchLinstener? = null
+    var mPageTouchLinstener: PageTouchLinstener? = null
 
     init {
         mHeaderPaint.apply {
@@ -85,45 +86,45 @@ class TxtView : View {
 
     override fun onDraw(canvas: Canvas) {
 
-        if (Math.abs(moveX) < ViewConfiguration.getTouchSlop()) {
+        when {
+            Math.abs(moveX) < ViewConfiguration.getTouchSlop() -> drawPage(canvas, mPage)
+            moveX < - ViewConfiguration.getTouchSlop() -> {
 
-            drawPage(canvas, mPage)
+                canvas.save()
+                canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
+                drawPage(canvas, mPage + 1)
+                canvas.restore()
 
-        } else if (moveX < - ViewConfiguration.getTouchSlop()) {
+                canvas.save()
 
-            canvas.save()
-            canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
-            drawPage(canvas, mPage + 1)
-            canvas.restore()
+                canvas.translate(moveX, 0f)
+                background.draw(canvas)
 
-            canvas.save()
-
-            canvas.translate(moveX, 0f)
-            background.draw(canvas)
-
-            drawPage(canvas, mPage)
-            canvas.drawRect(mShadowRect, mShadowPaint)
-            canvas.restore()
-        } else if (moveX > ViewConfiguration.getTouchSlop()) {
-
-            canvas.save()
-            canvas.clipRect(moveX, 0f, width.toFloat(), height.toFloat())
-            drawPage(canvas, mPage)
-            canvas.restore()
-
-            canvas.save()
-            canvas.translate(moveX - width, 0f)
-            background.draw(canvas)
-
-            if (mPage > 1) {
-                drawPage(canvas, mPage - 1)
+                drawPage(canvas, mPage)
                 canvas.drawRect(mShadowRect, mShadowPaint)
+                canvas.restore()
             }
-            canvas.restore()
+            moveX > ViewConfiguration.getTouchSlop() -> {
+
+                canvas.save()
+                canvas.clipRect(moveX, 0f, width.toFloat(), height.toFloat())
+                drawPage(canvas, mPage)
+                canvas.restore()
+
+                canvas.save()
+                canvas.translate(moveX - width, 0f)
+                background.draw(canvas)
+
+                if (mPage > 1) {
+                    drawPage(canvas, mPage - 1)
+                    canvas.drawRect(mShadowRect, mShadowPaint)
+                }
+                canvas.restore()
+            }
         }
     }
 
-    fun drawPage(canvas: Canvas, page: Int) {
+    private fun drawPage(canvas: Canvas, page: Int) {
 
         if (page > mPages.size) {
             return
@@ -149,7 +150,7 @@ class TxtView : View {
 
                 postInvalidate()
 
-                Log.d("feng", "--------dd-d-d-d-- cost: " + (System.currentTimeMillis() - startTime))
+                Log.d("feng", "-------- parse cost: " + (System.currentTimeMillis() - startTime))
             }.start()
         }
     }
@@ -220,7 +221,7 @@ class TxtView : View {
             page.addLineText(lineText, LineType.CONTENT)
             pageLineIndex++
 
-            if (pageLineIndex % 12 == 0) {
+            if ((mPages.size == 3 && pageLineIndex == 5) || (mPages.size % 5 == 0 && pageLineIndex == 8)) {
                 page.addLineAd(mAdBitmap!!)
             }
 
@@ -338,8 +339,8 @@ class TxtView : View {
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-
                 mTouchX = event.rawX
+                mTouchY = event.rawY
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -356,18 +357,18 @@ class TxtView : View {
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
 
                 mTouchX = event.rawX
-                if (moveX < - ViewConfiguration.getTouchSlop()) {
-                    nextPageWithAnim()
-                } else if (moveX > ViewConfiguration.getTouchSlop()) {
-                    prevPageWithAnim()
-                } else {
-                    var touchType = TouchType.CENTER
-                    if (mTouchX < width * 0.3) {
-                        touchType = TouchType.LEFT
-                    } else if (mTouchX > width * 0.7) {
-                        touchType = TouchType.RIGHT
+                when {
+                    moveX < - ViewConfiguration.getTouchSlop() -> nextPageWithAnim()
+                    moveX > ViewConfiguration.getTouchSlop() -> prevPageWithAnim()
+                    else -> {
+                        val touchType = when {
+                            mPages[mPage - 1].isInAd(mTouchY) -> TouchType.AD
+                            mTouchX < width * 0.3 -> TouchType.LEFT
+                            mTouchX > width * 0.7 -> TouchType.RIGHT
+                            else -> TouchType.CENTER
+                        }
+                        mPageTouchLinstener?.onClick(touchType, mPages[mPage - 1])
                     }
-                    mTouchLinstener?.onClick(touchType)
                 }
             }
         }

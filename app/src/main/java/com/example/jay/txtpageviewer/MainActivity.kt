@@ -1,12 +1,13 @@
 package com.example.jay.txtpageviewer
 
 import android.graphics.drawable.BitmapDrawable
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import com.jayfeng.lesscode.core.ActivityLess
-import com.jayfeng.txtview.touch.TouchLinstener
+import com.jayfeng.txtview.page.Page
+import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -18,16 +19,22 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sb = StringBuilder()
-        for (i in 1 .. 100) {
+        for (i in 1..100) {
             sb.append(content)
             sb.append("\n\n")
         }
+        // 设置文本内容
         contentView.setContent(sb.toString())
+        // 设置广告图片
         contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
-        contentView.mTouchLinstener = object : TouchLinstener {
-            override fun onClick(touchType: TouchType) {
+        // 设置手势回调
+        contentView.mPageTouchLinstener = object : PageTouchLinstener {
+            override fun onClick(touchType: TouchType, page: Page) {
                 Log.d("feng", "touch type: ${touchType.name}")
-                when(touchType) {
+                when (touchType) {
+                    TouchType.AD -> {
+                        Toast.makeText(this@MainActivity, "您点击了广告位置", Toast.LENGTH_SHORT).show()
+                    }
                     TouchType.LEFT -> {
                         contentView.prevPageWithAnim()
                     }

@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.util.Log
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -35,8 +36,14 @@ class Page(val width: Int,
 
     private var drawHeight = header.height.toFloat() + (contentFontMetrics.bottom - contentFontMetrics.top)
 
+    private var hasAd = false
+    private var adYStart = 1000f
+    private var adYEnd = 2000f
+
     private var adSrcRect: Rect? = null
     private var adDestRect: Rect? = null
+
+
 
     fun addLineText(text: String, type: LineType) {
         val line = Line()
@@ -77,6 +84,10 @@ class Page(val width: Int,
         drawHeight += bitmap.height
         drawHeight += lineSpace * 2 + (contentPaint.descent() - contentPaint.ascent())
 
+
+        hasAd = true
+        adYStart = line.y
+        adYEnd = drawHeight
         adSrcRect = Rect(0, 0, line.ad!!.width, line.ad!!.height)
         adDestRect = Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height)
     }
@@ -104,6 +115,13 @@ class Page(val width: Int,
 
     fun updateFooter(pageIndex: Int, pageTotal: Int) {
         footer.pageInfo = "$pageIndex / $pageTotal"
+    }
+
+    fun isInAd(yPos : Float) : Boolean {
+
+        Log.d("feng", "-------- hasAd: $hasAd, yPos: $yPos, adYStart: $adYStart, adYEnd: $adYEnd")
+
+        return hasAd && yPos > adYStart && yPos < adYEnd
     }
 
     fun isFull(): Boolean {
