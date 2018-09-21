@@ -14,8 +14,8 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ## 效果图
 
-![Screenshot](release/screen-normal.png)
-![Screenshot](release/screen-gpu.png)
+![Screenshot](art/screen-normal.png)
+![Screenshot](art/screen-gpu.png)
 
 
 ## NEXT PLAN
@@ -31,43 +31,43 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 #### 第一步，布局中嵌入 TxtView
 
 ```xml
-    <com.jayfeng.txtview.TxtView
-        android:id="@+id/contentView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_above="@id/bottom_bars"
-        android:background="@drawable/theme_leather_bg" />
+<com.jayfeng.txtview.TxtView
+    android:id="@+id/contentView"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_above="@id/bottom_bars"
+    android:background="@drawable/theme_leather_bg" />
 ```
 
 #### 第二步，设置 TxtView 属性
 
 ```kotlin
-        // 设置文本内容
-        contentView.setContent(sb.toString())
-        // 设置广告图片
-        contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
-        // 设置手势回调
-        contentView.mPageTouchLinstener = object : PageTouchLinstener {
-            override fun onClick(touchType: TouchType, page: Page) {
-                Log.d("feng", "touch type: ${touchType.name}")
-                when (touchType) {
-                    TouchType.AD -> {
-                        Toast.makeText(this@MainActivity, "您点击了广告位置", Toast.LENGTH_SHORT).show()
-                    }
-                    TouchType.LEFT -> {
-                        contentView.prevPageWithAnim()
-                    }
-                    TouchType.RIGHT -> {
-                        contentView.nextPageWithAnim()
-                    }
-                    TouchType.CENTER -> {
-                        Toast.makeText(this@MainActivity, "点击中部区域，显示菜单", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                    }
-                }
+// 设置文本内容
+contentView.setContent(sb.toString())
+// 设置广告图片
+contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
+// 设置手势回调
+contentView.mPageTouchLinstener = object : PageTouchLinstener {
+    override fun onClick(touchType: TouchType, page: Page) {
+        Log.d("feng", "touch type: ${touchType.name}")
+        when (touchType) {
+            TouchType.AD -> {
+                Toast.makeText(this@MainActivity, "您点击了广告位置", Toast.LENGTH_SHORT).show()
+            }
+            TouchType.LEFT -> {
+                contentView.prevPageWithAnim()
+            }
+            TouchType.RIGHT -> {
+                contentView.nextPageWithAnim()
+            }
+            TouchType.CENTER -> {
+                Toast.makeText(this@MainActivity, "点击中部区域，显示菜单", Toast.LENGTH_SHORT).show()
+            }
+            else -> {
             }
         }
+    }
+}
 ```
 
 后面会逐步开放接口，完善文档。
