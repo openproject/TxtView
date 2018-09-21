@@ -2,7 +2,7 @@
 
 TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在低端手机也能流畅如丝。
 
-体验地址：![点击下载](release/app-release-v0.1.apk)
+体验地址：[点击下载](release/)
 
 
 ## 功能
@@ -12,8 +12,8 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ## 效果图
 
-![Screenshot](release/screenshot_normal.png)
-![Screenshot](release/screenshot_gpu.png)
+![Screenshot](release/screen-normal.png)
+![Screenshot](release/screen-gpu.png)
 
 
 ## NEXT PLAN
