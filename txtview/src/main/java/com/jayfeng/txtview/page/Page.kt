@@ -88,8 +88,10 @@ class Page(val width: Int,
         hasAd = true
         adYStart = line.y
         adYEnd = drawHeight
-        adSrcRect = Rect(0, 0, line.ad!!.width, line.ad!!.height)
-        adDestRect = Rect(0, line.y.toInt(), width, line.y.toInt() + line.ad!!.height)
+
+        val scaleHeight = width * bitmap.height / bitmap.width
+        adSrcRect = Rect(0, 0, bitmap.width, bitmap.height)
+        adDestRect = Rect(0, line.y.toInt(), width, line.y.toInt() + scaleHeight)
     }
 
     fun draw(canvas: Canvas) {
