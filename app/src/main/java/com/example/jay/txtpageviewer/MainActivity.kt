@@ -95,6 +95,13 @@ class MainActivity : AppCompatActivity() {
                 txtViewBuilder.setNightMode(false).build()
             }
         }
+
+        fontBigger.setOnClickListener {
+            txtView.scaleFont(4f)
+        }
+        fontSmaller.setOnClickListener {
+            txtView.scaleFont(-4f)
+        }
     }
 
     override fun onDestroy() {

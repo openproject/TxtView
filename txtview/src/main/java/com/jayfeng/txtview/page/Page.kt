@@ -17,6 +17,9 @@ class Page(val width: Int,
            val footer: PageFooter,
            val padding: PagePadding) {
 
+    var start = 0
+    var length = 0
+
     private var lines = mutableListOf<Line>()
 
     private var contentFontMetrics: Paint.FontMetrics = TxtView.contentPaint.fontMetrics

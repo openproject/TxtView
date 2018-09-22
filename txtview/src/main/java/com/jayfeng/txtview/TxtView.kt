@@ -213,6 +213,8 @@ class TxtView : View {
 
     private fun parseContent() {
 
+        mLines.clear()
+
         val contentWidth = measuredWidth.toFloat() - mPaddingLeft - mPaddingRight
         val widthPaintLength = contentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
                 false, contentWidth, null)
@@ -266,18 +268,29 @@ class TxtView : View {
 
         // add content
         var pageLineIndex = 0
+        var pageLength = 0
         mLines.forEach { lineText ->
 
             val isFull = page.isFull()
             if (isFull) {
+
+                if (mPages.size > 0) {
+                    mPages.last().length = pageLength
+                }
+
                 pageLineIndex = 0
+                pageLength = 0
                 footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
                 page = Page(width, height, Paint(), mLineSpace.toFloat(), header, footer, padding)
+                if (mPages.size > 0) {
+                    page.start = mPages.last().start + mPages.last().length
+                }
                 mPages.add(page)
             }
 
             page.addLineText(lineText, LineType.CONTENT)
             pageLineIndex++
+            pageLength += lineText.length
 
             if ((mPages.size == 3 && pageLineIndex == 5) || (mPages.size % 5 == 0 && pageLineIndex == 8)) {
                 page.addLineAd(mAdBitmap!!)
@@ -287,7 +300,10 @@ class TxtView : View {
 
         if (!preload) {
             mPages.forEachIndexed { index, page ->
+                // update footer
                 page.updateFooter(index + 1, mPages.size)
+                // update start, length
+                page.start
             }
         }
 
@@ -455,6 +471,28 @@ class TxtView : View {
 
     fun isNightMode(): Boolean {
         return nightMode
+    }
+
+    fun scaleFont(fontDiff: Float) {
+        contentPaint.textSize = contentPaint.textSize + fontDiff
+        val currentStart = mPages[mPage - 1].start
+        Thread {
+
+            parseContent()
+
+            var newPageIndex = 0
+            run breaking@ {
+                mPages.forEachIndexed { index, page ->
+                    if (page.start > currentStart) {
+                        newPageIndex = index
+                        return@breaking
+                    }
+                }
+            }
+
+            mPage = newPageIndex
+            postInvalidate()
+        }.start()
     }
 
     class Builder(private val txtView: TxtView) {
