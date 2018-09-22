@@ -58,6 +58,13 @@ class TxtView : View {
 
     var mPageTouchLinstener: PageTouchLinstener? = null
 
+    var mPageBitmapMap : HashMap<Int, Bitmap> = HashMap()
+
+    /**
+     * public fileds
+     */
+    var renderMode: RenderMode = RenderMode.NORMAL
+
     init {
         mHeaderPaint.apply {
             isAntiAlias = true
@@ -86,9 +93,10 @@ class TxtView : View {
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     override fun onDraw(canvas: Canvas) {
-
         when {
-            Math.abs(moveX) < ViewConfiguration.getTouchSlop() -> drawPage(canvas, mPage)
+            Math.abs(moveX) < ViewConfiguration.getTouchSlop() -> {
+                drawPage(canvas, mPage)
+            }
             moveX < - ViewConfiguration.getTouchSlop() -> {
 
                 canvas.save()
@@ -97,10 +105,7 @@ class TxtView : View {
                 canvas.restore()
 
                 canvas.save()
-
                 canvas.translate(moveX, 0f)
-                background.draw(canvas)
-
                 drawPage(canvas, mPage)
                 canvas.drawRect(mShadowRect, mShadowPaint)
                 canvas.restore()
@@ -114,7 +119,6 @@ class TxtView : View {
 
                 canvas.save()
                 canvas.translate(moveX - width, 0f)
-                background.draw(canvas)
 
                 if (mPage > 1) {
                     drawPage(canvas, mPage - 1)
@@ -132,8 +136,41 @@ class TxtView : View {
         }
 
         val pageData = mPages[page - 1]
-        pageData.draw(canvas)
+        when(renderMode) {
+            RenderMode.NORMAL -> pageData.draw(canvas)
+            RenderMode.DOUBLE_BUFFER -> {
+                if (mPageBitmapMap[page - 1] == null) {
+                    val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+                    val pageCanvas = Canvas(pageBitmap)
+                    background.draw(pageCanvas)
+                    pageData.draw(pageCanvas)
 
+                    mPageBitmapMap[page - 1] = pageBitmap
+                }
+                canvas.drawBitmap(mPageBitmapMap[page - 1], 0f, 0f, null)
+            }
+        }
+    }
+
+    private fun preloadPageBitmap(page: Int, forward: Boolean) {
+        val pageIndex = page - 1
+        if (mPageBitmapMap[pageIndex] == null) {
+            Thread {
+                val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+                val pageCanvas = Canvas(pageBitmap)
+                background.draw(pageCanvas)
+                mPages[pageIndex].draw(pageCanvas)
+
+                mPageBitmapMap[pageIndex] = pageBitmap
+                if (forward && pageIndex - 2 >= 0) {
+                    mPageBitmapMap.get(pageIndex - 2)?.recycle()
+                    mPageBitmapMap.remove(pageIndex - 2)
+                } else if ((!forward) && pageIndex + 2 < mPages.size) {
+                    mPageBitmapMap.get(pageIndex + 2)?.recycle()
+                    mPageBitmapMap.remove(pageIndex + 2)
+                }
+            }.start()
+        }
     }
 
     fun setTxtFile(path: String) {
@@ -245,7 +282,11 @@ class TxtView : View {
             mPage = 1
         }
         Page.updateTime()
+
         invalidate()
+        if (renderMode == RenderMode.DOUBLE_BUFFER) {
+            preloadPageBitmap(mPage - 1, false)
+        }
     }
 
     fun nextPage() {
@@ -254,7 +295,11 @@ class TxtView : View {
         }
         mPage++
         Page.updateTime()
+
         invalidate()
+        if (renderMode == RenderMode.DOUBLE_BUFFER) {
+            preloadPageBitmap(mPage + 1, true)
+        }
     }
 
     fun firstPage() {

@@ -4,9 +4,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import com.jayfeng.lesscode.core.ActivityLess
 import com.jayfeng.txtview.page.Page
+import com.jayfeng.txtview.page.RenderMode
 import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,12 +26,13 @@ class MainActivity : AppCompatActivity() {
             sb.append("\n\n")
         }
         // 设置文本内容
-        // contentView.setContent(sb.toString())
-        contentView.setTxtFile("")
+        txtView.setContent(sb.toString())
+        txtView.renderMode = RenderMode.NORMAL
+//        contentView.setTxtFile("")
         // 设置广告图片
-        contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
+        txtView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
         // 设置手势回调
-        contentView.mPageTouchLinstener = object : PageTouchLinstener {
+        txtView.mPageTouchLinstener = object : PageTouchLinstener {
             override fun onClick(touchType: TouchType, page: Page) {
                 Log.d("feng", "touch type: ${touchType.name}")
                 when (touchType) {
@@ -37,13 +40,17 @@ class MainActivity : AppCompatActivity() {
                         Toast.makeText(this@MainActivity, "您点击了广告位置", Toast.LENGTH_SHORT).show()
                     }
                     TouchType.LEFT -> {
-                        contentView.prevPageWithAnim()
+                        txtView.prevPageWithAnim()
                     }
                     TouchType.RIGHT -> {
-                        contentView.nextPageWithAnim()
+                        txtView.nextPageWithAnim()
                     }
                     TouchType.CENTER -> {
-                        Toast.makeText(this@MainActivity, "点击中部区域，显示菜单", Toast.LENGTH_SHORT).show()
+                        if (bottom_bars.visibility == View.VISIBLE) {
+                            bottom_bars.visibility = View.GONE
+                        } else {
+                            bottom_bars.visibility = View.VISIBLE
+                        }
                     }
                     else -> {
                     }
@@ -52,16 +59,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         prevPage.setOnClickListener {
-            contentView.prevPageWithAnim()
+            txtView.prevPageWithAnim()
         }
         nextPage.setOnClickListener {
-            contentView.nextPageWithAnim()
+            txtView.nextPageWithAnim()
         }
         firstPage.setOnClickListener {
-            contentView.firstPage()
+            txtView.firstPage()
         }
         lastPage.setOnClickListener {
-            contentView.lastPage()
+            txtView.lastPage()
+        }
+
+        renderMode.setOnCheckedChangeListener { group, checkedId ->
+            if (checkedId == R.id.renderModeNomal) {
+                txtView.renderMode = RenderMode.NORMAL
+            } else {
+                txtView.renderMode = RenderMode.DOUBLE_BUFFER
+            }
         }
     }
 

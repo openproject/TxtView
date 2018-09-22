@@ -11,6 +11,7 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 - 智能分页
 - 手势回调
 - 支持嵌入广告位
+- 支持双缓冲模式（内存换性能）
 
 ## 效果图
 
@@ -34,7 +35,7 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ```xml
 <com.jayfeng.txtview.TxtView
-    android:id="@+id/contentView"
+    android:id="@+id/txtView"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_above="@id/bottom_bars"
@@ -45,22 +46,21 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ```kotlin
 // 设置文本内容
-contentView.setContent(sb.toString())
+txtView.setContent(sb.toString())
 // 设置广告图片
-contentView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
+txtView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
 // 设置手势回调
-contentView.mPageTouchLinstener = object : PageTouchLinstener {
+txtView.mPageTouchLinstener = object : PageTouchLinstener {
     override fun onClick(touchType: TouchType, page: Page) {
-        Log.d("feng", "touch type: ${touchType.name}")
         when (touchType) {
             TouchType.AD -> {
                 Toast.makeText(this@MainActivity, "您点击了广告位置", Toast.LENGTH_SHORT).show()
             }
             TouchType.LEFT -> {
-                contentView.prevPageWithAnim()
+                txtView.prevPageWithAnim()
             }
             TouchType.RIGHT -> {
-                contentView.nextPageWithAnim()
+                txtView.nextPageWithAnim()
             }
             TouchType.CENTER -> {
                 Toast.makeText(this@MainActivity, "点击中部区域，显示菜单", Toast.LENGTH_SHORT).show()
