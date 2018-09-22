@@ -2,6 +2,7 @@ package com.jayfeng.txtview.page
 
 import android.graphics.Canvas
 import android.graphics.Paint
+import com.jayfeng.txtview.TxtView
 import kotlin.properties.Delegates
 
 class PageFooter(val width: Int,
@@ -20,6 +21,6 @@ class PageFooter(val width: Int,
     fun draw(canvas: Canvas, drawHeight: Float) {
         val drawY = drawHeight - textOffset
         canvas.drawText(pageInfo, width - pageInfoWidth - paddingRight, drawY, paint)
-        canvas.drawText(Page.pageTime, paddingLeft, drawY, paint)
+        canvas.drawText(TxtView.pageTime, paddingLeft, drawY, paint)
     }
 }

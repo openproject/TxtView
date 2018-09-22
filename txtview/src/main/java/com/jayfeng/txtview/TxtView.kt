@@ -4,6 +4,8 @@ import android.animation.Animator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.Drawable
+import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -15,8 +17,29 @@ import com.jayfeng.lesscode.core.FileLess
 import com.jayfeng.txtview.page.*
 import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
+import java.text.SimpleDateFormat
+import java.util.*
 
 class TxtView : View {
+
+    companion object {
+
+        val NIGHT_CONTENT_PAINT = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#C2C2C2")
+            textSize = DisplayLess.`$dp2px`(17.0f).toFloat()
+        }
+
+        var pageTime = "00:00"
+        var contentPaint = Paint()
+        var titlePaint = Paint()
+
+        fun updateTime() {
+            val time = System.currentTimeMillis()
+            val dateFormat = SimpleDateFormat("HH:mm")
+            pageTime = dateFormat.format(Date(time))
+        }
+    }
 
     private var mHeaderPaint = Paint()
     private val mHeaderHeight: Int by lazy { DisplayLess.`$dp2px`(48f) }
@@ -28,13 +51,10 @@ class TxtView : View {
     private val mPaddingRight: Float by lazy { DisplayLess.`$dp2px`(28f).toFloat() }
     private val mPaddingBottom: Float by lazy { DisplayLess.`$dp2px`(8f).toFloat() }
 
-    private var mContentPaint = Paint()
-    private var mTitlePaint = Paint()
-
     private var mContent: String = ""
     private var mPage: Int = 1
     private var mLines = ArrayList<String>()
-    private val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f)}
+    private val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f) }
     private var mIsPaging = false
 
     private var mTouchX = 0f
@@ -45,8 +65,10 @@ class TxtView : View {
 
     private var mPages = ArrayList<Page>()
     private val mShadowPaint = Paint()
-    private val mShadowGradient: LinearGradient by lazy { LinearGradient(
-            measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 16f, 0f, intArrayOf(Color.parseColor("#AA666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)}
+    private val mShadowGradient: LinearGradient by lazy {
+        LinearGradient(
+                measuredWidth.toFloat(), 0f, measuredWidth.toFloat() + 16f, 0f, intArrayOf(Color.parseColor("#88666666"), Color.TRANSPARENT), null, Shader.TileMode.CLAMP)
+    }
     private val mShadowRect: Rect by lazy {
         Rect(measuredWidth, 0, measuredWidth + 16, measuredHeight).apply {
             mShadowPaint.shader = mShadowGradient
@@ -58,12 +80,12 @@ class TxtView : View {
 
     var mPageTouchLinstener: PageTouchLinstener? = null
 
-    var mPageBitmapMap : HashMap<Int, Bitmap> = HashMap()
+    private var mPageBitmapMap: HashMap<Int, Bitmap> = HashMap()
 
-    /**
-     * public fileds
-     */
-    var renderMode: RenderMode = RenderMode.NORMAL
+
+    private var title = ""
+    private var renderMode: RenderMode = RenderMode.NORMAL
+    private var nightMode: Boolean = false
 
     init {
         mHeaderPaint.apply {
@@ -76,16 +98,6 @@ class TxtView : View {
             color = Color.GRAY
             textSize = DisplayLess.`$dp2px`(14.0f).toFloat()
         }
-        mContentPaint.apply {
-            isAntiAlias = true
-            color = Color.parseColor("#424242")
-            textSize = DisplayLess.`$dp2px`(17.0f).toFloat()
-        }
-        mTitlePaint.apply {
-            isAntiAlias = true
-            color = Color.parseColor("#424242")
-            textSize = DisplayLess.`$dp2px`(24.0f).toFloat()
-        }
     }
 
     constructor(context: Context?) : super(context)
@@ -97,7 +109,7 @@ class TxtView : View {
             Math.abs(moveX) < ViewConfiguration.getTouchSlop() -> {
                 drawPage(canvas, mPage)
             }
-            moveX < - ViewConfiguration.getTouchSlop() -> {
+            moveX < -ViewConfiguration.getTouchSlop() -> {
 
                 canvas.save()
                 canvas.clipRect(width + moveX, 0f, width.toFloat(), height.toFloat())
@@ -136,13 +148,15 @@ class TxtView : View {
         }
 
         val pageData = mPages[page - 1]
-        when(renderMode) {
+        when (renderMode) {
             RenderMode.NORMAL -> pageData.draw(canvas)
             RenderMode.DOUBLE_BUFFER -> {
                 if (mPageBitmapMap[page - 1] == null) {
                     val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
                     val pageCanvas = Canvas(pageBitmap)
-                    background.draw(pageCanvas)
+                    if (background != null) {
+                        background.draw(pageCanvas)
+                    }
                     pageData.draw(pageCanvas)
 
                     mPageBitmapMap[page - 1] = pageBitmap
@@ -158,12 +172,14 @@ class TxtView : View {
             Thread {
                 val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
                 val pageCanvas = Canvas(pageBitmap)
-                background.draw(pageCanvas)
+                if (background != null) {
+                    background.draw(pageCanvas)
+                }
                 mPages[pageIndex].draw(pageCanvas)
 
                 mPageBitmapMap[pageIndex] = pageBitmap
                 if (forward && pageIndex - 2 >= 0) {
-                    mPageBitmapMap.get(pageIndex - 2)?.recycle()
+                    mPageBitmapMap[pageIndex - 2]?.recycle()
                     mPageBitmapMap.remove(pageIndex - 2)
                 } else if ((!forward) && pageIndex + 2 < mPages.size) {
                     mPageBitmapMap.get(pageIndex + 2)?.recycle()
@@ -198,7 +214,7 @@ class TxtView : View {
     private fun parseContent() {
 
         val contentWidth = measuredWidth.toFloat() - mPaddingLeft - mPaddingRight
-        val widthPaintLength = mContentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
+        val widthPaintLength = contentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
                 false, contentWidth, null)
         var preloadPage = true
         mContent.split("\n").forEach { paragraph ->
@@ -210,7 +226,7 @@ class TxtView : View {
                 }
 
                 var lineText = paragraph.substring(startIndex, endIndex)
-                while (mContentPaint.measureText(lineText + "好") < contentWidth && endIndex < paragraph.length) {
+                while (contentPaint.measureText(lineText + "好") < contentWidth && endIndex < paragraph.length) {
                     endIndex += 1
                     lineText = paragraph.substring(startIndex, endIndex)
                 }
@@ -235,16 +251,18 @@ class TxtView : View {
         parseLineToPage(false)
     }
 
-    private fun parseLineToPage(preload : Boolean) {
+    private fun parseLineToPage(preload: Boolean) {
 
         val header = PageHeader(width, mHeaderHeight, mHeaderPaint, "王二狗的那些神话", mPaddingLeft, mPaddingRight)
         var footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
         val padding = PagePadding(mPaddingLeft, mPaddingTop, mPaddingRight, mPaddingBottom)
-        var page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
+        var page = Page(width, height, Paint(), mLineSpace.toFloat(), header, footer, padding)
         mPages.add(page)
 
         // add title
-        page.addLineText("第一章 重新开始", LineType.TITLE)
+        if (!TextUtils.isEmpty(title)) {
+            page.addLineText(title, LineType.TITLE)
+        }
 
         // add content
         var pageLineIndex = 0
@@ -254,7 +272,7 @@ class TxtView : View {
             if (isFull) {
                 pageLineIndex = 0
                 footer = PageFooter(width, mFooterHeight, mFooterPaint, mPaddingLeft, mPaddingRight)
-                page = Page(width, height, mContentPaint, mTitlePaint, Paint(), mLineSpace.toFloat(), header, footer, padding)
+                page = Page(width, height, Paint(), mLineSpace.toFloat(), header, footer, padding)
                 mPages.add(page)
             }
 
@@ -273,7 +291,7 @@ class TxtView : View {
             }
         }
 
-        Page.updateTime()
+        updateTime()
     }
 
     fun prevPage() {
@@ -281,7 +299,7 @@ class TxtView : View {
         if (mPage <= 0) {
             mPage = 1
         }
-        Page.updateTime()
+        updateTime()
 
         invalidate()
         if (renderMode == RenderMode.DOUBLE_BUFFER) {
@@ -294,7 +312,7 @@ class TxtView : View {
             return
         }
         mPage++
-        Page.updateTime()
+        updateTime()
 
         invalidate()
         if (renderMode == RenderMode.DOUBLE_BUFFER) {
@@ -383,6 +401,17 @@ class TxtView : View {
         mIsPaging = true
     }
 
+    fun release() {
+        if (mAdBitmap?.isRecycled == false) {
+            mAdBitmap?.recycle()
+        }
+        mPageBitmapMap.forEach { _, bitmap ->
+            if (!bitmap.isRecycled) {
+                bitmap.recycle()
+            }
+        }
+    }
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
         when (event.action) {
@@ -396,9 +425,9 @@ class TxtView : View {
                 moveX = event.rawX - mTouchX
                 if (mPage == 1 && moveX > ViewConfiguration.getTouchSlop()) {
 //                    moveX = 0f
-                } else if (mPage == mPages.size && moveX < - ViewConfiguration.getTouchSlop()) {
+                } else if (mPage == mPages.size && moveX < -ViewConfiguration.getTouchSlop()) {
 //                    moveX = 0f
-                } else if (Math.abs(moveX) > ViewConfiguration.getTouchSlop()){
+                } else if (Math.abs(moveX) > ViewConfiguration.getTouchSlop()) {
                     invalidate()
                 }
             }
@@ -406,7 +435,7 @@ class TxtView : View {
 
                 mTouchX = event.rawX
                 when {
-                    moveX < - ViewConfiguration.getTouchSlop() -> nextPageWithAnim()
+                    moveX < -ViewConfiguration.getTouchSlop() -> nextPageWithAnim()
                     moveX > ViewConfiguration.getTouchSlop() -> prevPageWithAnim()
                     else -> {
                         val touchType = when {
@@ -422,5 +451,88 @@ class TxtView : View {
         }
 
         return super.onTouchEvent(event)
+    }
+
+    fun isNightMode(): Boolean {
+        return nightMode
+    }
+
+    class Builder(private val txtView: TxtView) {
+
+        private var title = ""
+        private var renderMode: RenderMode = RenderMode.NORMAL
+        private var nightMode: Boolean = false
+        private var backgroud: Drawable? = null
+
+        private var contentPaint: Paint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#424242")
+            textSize = DisplayLess.`$dp2px`(17.0f).toFloat()
+        }
+
+        private var titlePaint: Paint = Paint().apply {
+            isAntiAlias = true
+            color = Color.parseColor("#424242")
+            textSize = DisplayLess.`$dp2px`(24.0f).toFloat()
+        }
+
+
+        fun setNightMode(nightMode: Boolean): Builder {
+            this.nightMode = nightMode
+            return this@Builder
+        }
+
+        fun setTitle(title: String): Builder {
+            this.title = title
+            return this@Builder
+        }
+
+        fun setRenderMode(renderMode: RenderMode): Builder {
+            this.renderMode = renderMode
+            return this@Builder
+        }
+
+        fun setBackgroudDrawable(drawableId: Int): Builder {
+            this.backgroud = txtView.resources.getDrawable(drawableId)
+            return this@Builder
+        }
+
+        fun setContentPainter(paint: Paint): Builder {
+            this.contentPaint = paint
+            return this@Builder
+        }
+
+        fun setTitlePainter(paint: Paint): Builder {
+            this.titlePaint = paint
+            return this@Builder
+        }
+
+        fun build() {
+
+            txtView.title = this.title
+            txtView.nightMode = this.nightMode
+            txtView.renderMode = this.renderMode
+            if (backgroud != null) {
+                txtView.setBackgroundDrawable(backgroud)
+            }
+
+            if (nightMode) {
+                TxtView.contentPaint = NightPaint.toNight(contentPaint)
+                TxtView.titlePaint = NightPaint.toNight(titlePaint)
+                txtView.setBackgroundColor(Color.BLACK)
+            } else {
+                TxtView.contentPaint = this.contentPaint
+                TxtView.titlePaint = this.titlePaint
+            }
+
+            txtView.mPageBitmapMap.forEach { _, bitmap ->
+                if (!bitmap.isRecycled) {
+                    bitmap.recycle()
+                }
+            }
+            txtView.mPageBitmapMap.clear()
+            txtView.invalidate()
+        }
+
     }
 }

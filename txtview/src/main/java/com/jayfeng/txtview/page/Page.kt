@@ -5,34 +5,22 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
 import android.util.Log
+import com.jayfeng.txtview.TxtView
 import java.text.SimpleDateFormat
 import java.util.*
 
 class Page(val width: Int,
            val height: Int,
-           val contentPaint: Paint,
-           val titlePaint: Paint,
            val adPaint: Paint,
            val lineSpace: Float,
            val header: PageHeader,
            val footer: PageFooter,
            val padding: PagePadding) {
 
-    companion object {
-        var pageTime = "00:00"
-
-        fun updateTime() {
-            val time = System.currentTimeMillis()
-            val dateFormat = SimpleDateFormat("HH:mm")
-            pageTime = dateFormat.format(Date(time))
-        }
-
-    }
-
     private var lines = mutableListOf<Line>()
 
-    private var contentFontMetrics: Paint.FontMetrics = contentPaint.fontMetrics
-    private var titleFontMetrics: Paint.FontMetrics = titlePaint.fontMetrics
+    private var contentFontMetrics: Paint.FontMetrics = TxtView.contentPaint.fontMetrics
+    private var titleFontMetrics: Paint.FontMetrics = TxtView.titlePaint.fontMetrics
 
     private var drawHeight = header.height.toFloat() + (contentFontMetrics.bottom - contentFontMetrics.top)
 
@@ -63,7 +51,7 @@ class Page(val width: Int,
                 line.y += titleTextHeight
                 drawHeight += titleTextHeight * 3
 
-                val titleWidth = titlePaint.measureText(text)
+                val titleWidth = TxtView.titlePaint.measureText(text)
                 line.x = (width + padding.left - padding.right - titleWidth) / 2
 
             }
@@ -84,7 +72,7 @@ class Page(val width: Int,
         val scaleHeight = width * bitmap.height / bitmap.width
 
         drawHeight += scaleHeight
-        drawHeight += lineSpace * 2 + (contentPaint.descent() - contentPaint.ascent())
+        drawHeight += lineSpace * 2 + (TxtView.contentPaint.descent() - TxtView.contentPaint.ascent())
 
 
         hasAd = true
@@ -101,10 +89,10 @@ class Page(val width: Int,
         lines.forEach { line ->
             when (line.type) {
                 LineType.CONTENT -> {
-                    canvas.drawText(line.text, line.x, line.y, contentPaint)
+                    canvas.drawText(line.text, line.x, line.y, TxtView.contentPaint)
                 }
                 LineType.TITLE -> {
-                    canvas.drawText(line.text, line.x, line.y, titlePaint)
+                    canvas.drawText(line.text, line.x, line.y, TxtView.titlePaint)
                 }
                 LineType.AD -> {
                     canvas.drawBitmap(line.ad, adSrcRect, adDestRect, adPaint)

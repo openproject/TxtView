@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import com.jayfeng.lesscode.core.ActivityLess
+import com.jayfeng.txtview.TxtView
 import com.jayfeng.txtview.page.Page
 import com.jayfeng.txtview.page.RenderMode
 import com.jayfeng.txtview.touch.PageTouchLinstener
@@ -15,10 +17,18 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    private val txtViewBuilder: TxtView.Builder by lazy { TxtView.Builder(txtView) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ActivityLess.`$fullScreen`(this)
         setContentView(R.layout.activity_main)
+
+        // TxtView Builder
+        txtViewBuilder.setRenderMode(RenderMode.NORMAL)
+                .setTitle("我是设置的标题")
+                .setBackgroudDrawable(R.drawable.theme_leather_bg)
+                .build()
 
         val sb = StringBuilder()
         for (i in 1..100) {
@@ -27,7 +37,6 @@ class MainActivity : AppCompatActivity() {
         }
         // 设置文本内容
         txtView.setContent(sb.toString())
-        txtView.renderMode = RenderMode.NORMAL
 //        contentView.setTxtFile("")
         // 设置广告图片
         txtView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
@@ -73,11 +82,25 @@ class MainActivity : AppCompatActivity() {
 
         renderMode.setOnCheckedChangeListener { group, checkedId ->
             if (checkedId == R.id.renderModeNomal) {
-                txtView.renderMode = RenderMode.NORMAL
+                txtViewBuilder.setRenderMode(RenderMode.NORMAL).build()
             } else {
-                txtView.renderMode = RenderMode.DOUBLE_BUFFER
+                txtViewBuilder.setRenderMode(RenderMode.DOUBLE_BUFFER).build()
             }
         }
+
+        nightMode.setOnCheckedChangeListener { group, checkedId ->
+            if (checkedId == R.id.nightModeOn) {
+                txtViewBuilder.setNightMode(true).build()
+            } else {
+                txtViewBuilder.setNightMode(false).build()
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        txtView.release()
     }
 
     val content = "　　由于这几年不让下网捕鱼了，水库里的鱼明显多了不少，AAAAABBBBBBBB之后，方圆五六十米水域内的鱼差不多都给震晕浮上了水面，胖子就是闭上眼睛用抄网捞，也是网网都不落空。\n" +
