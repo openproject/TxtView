@@ -15,6 +15,7 @@ import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
 import com.jayfeng.lesscode.core.FileLess
 import com.jayfeng.txtview.page.*
+import com.jayfeng.txtview.theme.NightTheme
 import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
 import java.text.SimpleDateFormat
@@ -55,7 +56,8 @@ class TxtView : View {
     private var mPage: Int = 1
     private var mLines = ArrayList<String>()
     private val mLineSpace: Int by lazy { DisplayLess.`$dp2px`(8f) }
-    private var mIsPaging = false
+    private var mIsPaging = false     // 正在翻页动画状态
+    private var mIsParsing = false    // 正在转化文本：第一次初始化、设置字体大小时触发
 
     private var mTouchX = 0f
     private var mTouchY = 0f
@@ -202,7 +204,7 @@ class TxtView : View {
             Thread {
                 val startTime = System.currentTimeMillis()
 
-                parseContent()
+                parseContent(true)
 
                 postInvalidate()
 
@@ -211,14 +213,14 @@ class TxtView : View {
         }
     }
 
-    private fun parseContent() {
-
+    private fun parseContent(preload: Boolean) {
+        mIsParsing = true
         mLines.clear()
 
         val contentWidth = measuredWidth.toFloat() - mPaddingLeft - mPaddingRight
         val widthPaintLength = contentPaint.breakText("测试字符串测试字符串测试字符串测试字符串测试字符串测试字符串字符串测试字符串测试字符符串测试字符串",
                 false, contentWidth, null)
-        var preloadPage = true
+        var preloadPage = preload
         mContent.split("\n").forEach { paragraph ->
             var startIndex = 0
             while (startIndex < paragraph.length) {
@@ -251,6 +253,8 @@ class TxtView : View {
 
         mPages.clear()
         parseLineToPage(false)
+
+        mIsParsing = false
     }
 
     private fun parseLineToPage(preload: Boolean) {
@@ -473,12 +477,34 @@ class TxtView : View {
         return nightMode
     }
 
-    fun scaleFont(fontDiff: Float) {
-        contentPaint.textSize = contentPaint.textSize + fontDiff
-        val currentStart = mPages[mPage - 1].start
+    fun scaleFont(cPaint: Paint) {
+
+        if (mIsParsing) {
+            return
+        }
+
+        if (nightMode) {
+            val theme = NightTheme()
+            TxtView.contentPaint = theme.toNight(cPaint)
+        } else {
+            TxtView.contentPaint = cPaint
+        }
+
+        // clear outdated bitmap cache
+        mPageBitmapMap.forEach { _, bitmap ->
+            if (!bitmap.isRecycled) {
+                bitmap.recycle()
+            }
+        }
+        mPageBitmapMap.clear()
+
+        val currentPage = mPages[mPage - 1]
+        val currentStart = currentPage.start + currentPage.length / 2
+
+
         Thread {
 
-            parseContent()
+            parseContent(false)
 
             var newPageIndex = 0
             run breaking@ {
@@ -555,8 +581,9 @@ class TxtView : View {
             }
 
             if (nightMode) {
-                TxtView.contentPaint = NightPaint.toNight(contentPaint)
-                TxtView.titlePaint = NightPaint.toNight(titlePaint)
+                val theme = NightTheme()
+                TxtView.contentPaint = theme.toNight(contentPaint)
+                TxtView.titlePaint = theme.toNight(titlePaint)
                 txtView.setBackgroundColor(Color.BLACK)
             } else {
                 TxtView.contentPaint = this.contentPaint
@@ -569,7 +596,7 @@ class TxtView : View {
                 }
             }
             txtView.mPageBitmapMap.clear()
-            txtView.invalidate()
+            txtView.postInvalidate()
         }
 
     }

@@ -1,5 +1,7 @@
 package com.example.jay.txtpageviewer
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -8,6 +10,7 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import com.jayfeng.lesscode.core.ActivityLess
+import com.jayfeng.lesscode.core.DisplayLess
 import com.jayfeng.txtview.TxtView
 import com.jayfeng.txtview.page.Page
 import com.jayfeng.txtview.page.RenderMode
@@ -16,6 +19,11 @@ import com.jayfeng.txtview.touch.TouchType
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val contentPaint = Paint().apply {
+        isAntiAlias = true
+        color = Color.parseColor("#424242")
+        textSize = DisplayLess.`$dp2px`(17.0f).toFloat() }
 
     private val txtViewBuilder: TxtView.Builder by lazy { TxtView.Builder(txtView) }
 
@@ -28,10 +36,11 @@ class MainActivity : AppCompatActivity() {
         txtViewBuilder.setRenderMode(RenderMode.NORMAL)
                 .setTitle("我是设置的标题")
                 .setBackgroudDrawable(R.drawable.theme_leather_bg)
+                .setContentPainter(contentPaint)
                 .build()
 
         val sb = StringBuilder()
-        for (i in 1..100) {
+        for (i in 1..10) {
             sb.append(content)
             sb.append("\n\n")
         }
@@ -97,10 +106,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         fontBigger.setOnClickListener {
-            txtView.scaleFont(4f)
+            contentPaint.textSize += 4f
+            txtView.scaleFont(contentPaint)
         }
         fontSmaller.setOnClickListener {
-            txtView.scaleFont(-4f)
+            contentPaint.textSize -= 4f
+            txtView.scaleFont(contentPaint)
         }
     }
 

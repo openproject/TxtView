@@ -1,11 +1,11 @@
-package com.jayfeng.txtview.page
+package com.jayfeng.txtview.theme
 
 import android.graphics.Color
 import android.graphics.Paint
 
-object NightPaint {
+class NightTheme: ITheme {
 
-    fun toNight(paint: Paint): Paint {
+    override fun toNight(paint: Paint): Paint {
         val nightPaint = Paint()
         nightPaint.isAntiAlias = paint.isAntiAlias
         nightPaint.textSize = paint.textSize
