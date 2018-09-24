@@ -98,7 +98,9 @@ class Page(val width: Int,
                     canvas.drawText(line.text, line.x, line.y, TxtView.titlePaint)
                 }
                 LineType.AD -> {
-                    canvas.drawBitmap(line.ad, adSrcRect, adDestRect, adPaint)
+                    if (line.ad != null && !line.ad!!.isRecycled) {
+                        canvas.drawBitmap(line.ad, adSrcRect, adDestRect, adPaint)
+                    }
                 }
             }
         }
