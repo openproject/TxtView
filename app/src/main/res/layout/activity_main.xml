@@ -10,7 +10,16 @@
         android:id="@+id/txtView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="@android:color/white"/>
+        android:textColor="@android:color/white">
+
+        <TextView android:id="@+id/txtViewLoadingView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="24sp"
+            android:text="正在加载..."/>
+
+    </com.jayfeng.txtview.TxtView>
 
     <LinearLayout android:visibility="gone"
         android:id="@+id/bottom_bars"

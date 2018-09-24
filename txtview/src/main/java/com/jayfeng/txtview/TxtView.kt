@@ -13,9 +13,11 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
 import com.jayfeng.lesscode.core.FileLess
+import com.jayfeng.lesscode.core.ResourceLess
 import com.jayfeng.txtview.page.*
 import com.jayfeng.txtview.theme.NightTheme
 import com.jayfeng.txtview.touch.PageTouchLinstener
@@ -23,7 +25,7 @@ import com.jayfeng.txtview.touch.TouchType
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TxtView : View {
+class TxtView : ViewGroup {
 
     companion object {
 
@@ -90,6 +92,9 @@ class TxtView : View {
     private var isLongPressedCleared = false
     private val longPressedHandler = Handler()
 
+    private var isLoading = true
+    private var loadingView: View? = null
+
     init {
         mHeaderPaint.apply {
             isAntiAlias = true
@@ -106,6 +111,39 @@ class TxtView : View {
     constructor(context: Context?) : super(context)
     constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+
+        val widthMode = MeasureSpec.getMode(widthMeasureSpec)
+        val widthSize = MeasureSpec.getSize(widthMeasureSpec)
+        val heightMode = MeasureSpec.getMode(heightMeasureSpec)
+        val heightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        for (i in 0..(childCount - 1)) {
+            val childView = getChildAt(i)
+            if (childView.id == ResourceLess.`$id`(context, "txtViewLoadingView", ResourceLess.TYPE.ID)) {
+                // Loading View
+                loadingView = childView
+                measureChild(childView, widthMeasureSpec, heightMeasureSpec)
+            }
+        }
+
+        setMeasuredDimension(widthSize, heightSize)
+    }
+
+    override fun onLayout(p0: Boolean, p1: Int, p2: Int, p3: Int, p4: Int) {
+
+        loadingView?.let {
+            val cWidth = it.measuredWidth
+            val cHeight = it.measuredHeight
+
+            it.layout((width - cWidth) / 2,
+                    (height - cHeight) / 2,
+                    (width + cWidth) / 2,
+                    (height + cHeight) / 2)
+        }
+    }
 
     override fun onDraw(canvas: Canvas) {
         when {
@@ -165,7 +203,7 @@ class TxtView : View {
 
     private fun preloadPageBitmap(page: Int, forward: Boolean) {
         val pageIndex = page - 1
-        if (pageIndex < mPages.size && mPageBitmapMap[pageIndex] == null) {
+        if (pageIndex < mPages.size && pageIndex > 0 && mPageBitmapMap[pageIndex] == null) {
             Thread {
                 val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
                 val pageCanvas = Canvas(pageBitmap)
@@ -194,6 +232,9 @@ class TxtView : View {
 
     fun setContent(content: String) {
         this.mContent = content
+
+        this.isLoading = false
+        this.loadingView?.visibility = View.GONE
 
         post {
             Thread {
@@ -422,6 +463,10 @@ class TxtView : View {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+
+        if (isLoading) {
+            return false
+        }
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {

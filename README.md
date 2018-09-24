@@ -13,6 +13,7 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 - 手势回调
 - 支持嵌入广告位
 - 支持双缓冲模式（内存换性能）
+- 自定义加载视图
 
 
 ## 效果图
@@ -23,7 +24,6 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ## NEXT PLAN
 
-- 自定义加载视图
 - 阅读记录
 - 设置字体
 - 导入大文件 TXT 处理
@@ -36,12 +36,21 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 #### 第一步，布局中嵌入 TxtView
 
 ```xml
-<com.jayfeng.txtview.TxtView
-    android:id="@+id/txtView"
-    android:layout_width="wrap_content"
-    android:layout_height="match_parent"
-    android:layout_above="@id/bottom_bars"
-    android:background="@drawable/theme_leather_bg" />
+    <com.jayfeng.txtview.TxtView
+        android:id="@+id/txtView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="@android:color/white">
+
+        <!-- txtViewLoadingView 为固定ID不能修改。代表加载视图 -->
+        <TextView android:id="@+id/txtViewLoadingView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:textSize="24sp"
+            android:text="正在加载..."/>
+
+    </com.jayfeng.txtview.TxtView>
 ```
 
 #### 第二步，设置 TxtView 属性
@@ -71,6 +80,10 @@ txtView.mPageTouchLinstener = object : PageTouchLinstener {
             }
         }
     }
+}
+// loading 视图点击
+txtViewLoadingView.setOnClickListener {
+    Toast.makeText(this@MainActivity, "点击了 LoadingView", Toast.LENGTH_SHORT).show()
 }
 ```
 

@@ -45,7 +45,9 @@ class MainActivity : AppCompatActivity() {
             sb.append("\n\n")
         }
         // 设置文本内容
-        txtView.setContent(sb.toString())
+        txtView.postDelayed({
+            txtView.setContent(sb.toString())
+        }, 2000)
 //        contentView.setTxtFile("")
         // 设置广告图片
         txtView.mAdBitmap = (resources.getDrawable(R.drawable.ad) as BitmapDrawable).bitmap
@@ -116,6 +118,10 @@ class MainActivity : AppCompatActivity() {
         fontSmaller.setOnClickListener {
             contentPaint.textSize -= 4f
             txtView.scaleFont(contentPaint)
+        }
+
+        txtViewLoadingView.setOnClickListener {
+            Toast.makeText(this@MainActivity, "点击了 LoadingView", Toast.LENGTH_SHORT).show()
         }
     }
 
