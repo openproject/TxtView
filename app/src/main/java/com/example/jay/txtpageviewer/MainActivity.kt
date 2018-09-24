@@ -74,6 +74,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            override fun onLongPressed(touchType: TouchType, page: Page) {
+                Toast.makeText(this@MainActivity, "长按： ${touchType.name}", Toast.LENGTH_SHORT).show()
+            }
         }
 
         prevPage.setOnClickListener {

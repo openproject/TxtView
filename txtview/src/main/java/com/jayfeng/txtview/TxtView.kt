@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.os.Handler
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Log
@@ -82,6 +83,11 @@ class TxtView : View {
     private var title = ""
     private var renderMode: RenderMode = RenderMode.DOUBLE_BUFFER
     private var nightMode: Boolean = false
+
+    // Long Pressed
+    private var isLongPressed = false
+    private var isLongPressedCleared = false
+    private val longPressedHandler = Handler()
 
     init {
         mHeaderPaint.apply {
@@ -430,6 +436,26 @@ class TxtView : View {
             MotionEvent.ACTION_DOWN -> {
                 mTouchX = event.rawX
                 mTouchY = event.rawY
+
+                isLongPressed = false
+                isLongPressedCleared = false
+                longPressedHandler.postDelayed({
+
+                    isLongPressed = true
+
+                    mTouchX = event.rawX
+                    if (Math.abs(moveX) < ViewConfiguration.getTouchSlop()) {
+                        val touchType = when {
+                            mPages[mPage - 1].isInAd(mTouchY) -> TouchType.AD
+                            mTouchX < width * 0.3 -> TouchType.LEFT
+                            mTouchX > width * 0.7 -> TouchType.RIGHT
+                            else -> TouchType.CENTER
+                        }
+                        mPageTouchLinstener?.onLongPressed(touchType, mPages[mPage - 1])
+                    }
+                }, ViewConfiguration.getLongPressTimeout().toLong())
+
+
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -440,23 +466,29 @@ class TxtView : View {
                 } else if (mPage == mPages.size && moveX < -ViewConfiguration.getTouchSlop()) {
 //                    moveX = 0f
                 } else if (Math.abs(moveX) > ViewConfiguration.getTouchSlop()) {
+                    if (!isLongPressedCleared) {
+                        longPressedHandler.removeCallbacksAndMessages(null)
+                        isLongPressedCleared = true
+                    }
                     invalidate()
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-
-                mTouchX = event.rawX
-                when {
-                    moveX < -ViewConfiguration.getTouchSlop() -> nextPageWithAnim()
-                    moveX > ViewConfiguration.getTouchSlop() -> prevPageWithAnim()
-                    else -> {
-                        val touchType = when {
-                            mPages[mPage - 1].isInAd(mTouchY) -> TouchType.AD
-                            mTouchX < width * 0.3 -> TouchType.LEFT
-                            mTouchX > width * 0.7 -> TouchType.RIGHT
-                            else -> TouchType.CENTER
+                longPressedHandler.removeCallbacksAndMessages(null)
+                if (!isLongPressed) {
+                    mTouchX = event.rawX
+                    when {
+                        moveX < -ViewConfiguration.getTouchSlop() -> nextPageWithAnim()
+                        moveX > ViewConfiguration.getTouchSlop() -> prevPageWithAnim()
+                        else -> {
+                            val touchType = when {
+                                mPages[mPage - 1].isInAd(mTouchY) -> TouchType.AD
+                                mTouchX < width * 0.3 -> TouchType.LEFT
+                                mTouchX > width * 0.7 -> TouchType.RIGHT
+                                else -> TouchType.CENTER
+                            }
+                            mPageTouchLinstener?.onClick(touchType, mPages[mPage - 1])
                         }
-                        mPageTouchLinstener?.onClick(touchType, mPages[mPage - 1])
                     }
                 }
             }

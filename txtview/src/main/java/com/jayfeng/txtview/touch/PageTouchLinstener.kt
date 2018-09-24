@@ -7,4 +7,6 @@ interface PageTouchLinstener {
 
     fun onClick(touchType: TouchType, page: Page)
 
+    fun onLongPressed(touchType: TouchType, page: Page)
+
 }
