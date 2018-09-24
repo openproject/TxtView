@@ -1,6 +1,7 @@
 package com.jayfeng.txtview
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
@@ -334,6 +335,20 @@ class TxtView : View {
         }
     }
 
+    fun gotoPage(pageIndex: Int) {
+        var pageIndex = pageIndex
+        if (pageIndex < 1) {
+            pageIndex = 1
+        } else if (pageIndex > mPages.size) {
+            pageIndex = mPages.size
+        }
+
+        mPage = pageIndex
+        updateTime()
+
+        invalidate()
+    }
+
     fun firstPage() {
         mPage = 1
         invalidate()
@@ -358,25 +373,13 @@ class TxtView : View {
             moveX = va.animatedValue as Float
             invalidate()
         }
-        animator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationRepeat(animation: Animator?) {
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-            }
-
+        animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 prevPage()
                 moveX = 0f
                 animator.cancel()
-                postDelayed({
-                    mIsPaging = false
-                }, 20)
+                mIsPaging = false
             }
-
         })
         animator.start()
         mIsPaging = true
@@ -395,25 +398,13 @@ class TxtView : View {
             moveX = va.animatedValue as Float
             invalidate()
         }
-        animator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationRepeat(animation: Animator?) {
-            }
-
-            override fun onAnimationCancel(animation: Animator?) {
-            }
-
-            override fun onAnimationStart(animation: Animator?) {
-            }
-
+        animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 nextPage()
                 moveX = 0f
                 animator.cancel()
-                postDelayed({
-                    mIsPaging = false
-                }, 20)
+                mIsPaging = false
             }
-
         })
         animator.start()
         mIsPaging = true
@@ -445,6 +436,7 @@ class TxtView : View {
 
                     mTouchX = event.rawX
                     if (Math.abs(moveX) < ViewConfiguration.getTouchSlop()) {
+                        moveX = 0f
                         val touchType = when {
                             mPages[mPage - 1].isInAd(mTouchY) -> TouchType.AD
                             mTouchX < width * 0.3 -> TouchType.LEFT
@@ -459,6 +451,10 @@ class TxtView : View {
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
+
+                if (isLongPressed) {
+                    return false
+                }
 
                 moveX = event.rawX - mTouchX
                 if (mPage == 1 && moveX > ViewConfiguration.getTouchSlop()) {
