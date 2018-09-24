@@ -25,12 +25,6 @@ class TxtView : View {
 
     companion object {
 
-        val NIGHT_CONTENT_PAINT = Paint().apply {
-            isAntiAlias = true
-            color = Color.parseColor("#C2C2C2")
-            textSize = DisplayLess.`$dp2px`(17.0f).toFloat()
-        }
-
         var pageTime = "00:00"
         var contentPaint = Paint()
         var titlePaint = Paint()
@@ -86,7 +80,7 @@ class TxtView : View {
 
 
     private var title = ""
-    private var renderMode: RenderMode = RenderMode.NORMAL
+    private var renderMode: RenderMode = RenderMode.DOUBLE_BUFFER
     private var nightMode: Boolean = false
 
     init {
@@ -154,23 +148,17 @@ class TxtView : View {
             RenderMode.NORMAL -> pageData.draw(canvas)
             RenderMode.DOUBLE_BUFFER -> {
                 if (mPageBitmapMap[page - 1] == null) {
-                    val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
-                    val pageCanvas = Canvas(pageBitmap)
-                    if (background != null) {
-                        background.draw(pageCanvas)
-                    }
-                    pageData.draw(pageCanvas)
-
-                    mPageBitmapMap[page - 1] = pageBitmap
+                    pageData.draw(canvas)
+                } else {
+                    canvas.drawBitmap(mPageBitmapMap[page - 1], 0f, 0f, null)
                 }
-                canvas.drawBitmap(mPageBitmapMap[page - 1], 0f, 0f, null)
             }
         }
     }
 
     private fun preloadPageBitmap(page: Int, forward: Boolean) {
         val pageIndex = page - 1
-        if (mPageBitmapMap[pageIndex] == null) {
+        if (pageIndex < mPages.size && mPageBitmapMap[pageIndex] == null) {
             Thread {
                 val pageBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
                 val pageCanvas = Canvas(pageBitmap)
@@ -359,7 +347,7 @@ class TxtView : View {
 
         val animator = ValueAnimator.ofFloat(moveX, width.toFloat())
         animator.interpolator = DecelerateInterpolator()
-        animator.duration = 240
+        animator.duration = 160
         animator.addUpdateListener { va ->
             moveX = va.animatedValue as Float
             invalidate()
@@ -378,7 +366,9 @@ class TxtView : View {
                 prevPage()
                 moveX = 0f
                 animator.cancel()
-                mIsPaging = false
+                postDelayed({
+                    mIsPaging = false
+                }, 20)
             }
 
         })
@@ -394,7 +384,7 @@ class TxtView : View {
 
         val animator = ValueAnimator.ofFloat(moveX, -width.toFloat())
         animator.interpolator = DecelerateInterpolator()
-        animator.duration = 240
+        animator.duration = 160
         animator.addUpdateListener { va ->
             moveX = va.animatedValue as Float
             invalidate()
@@ -413,7 +403,9 @@ class TxtView : View {
                 nextPage()
                 moveX = 0f
                 animator.cancel()
-                mIsPaging = false
+                postDelayed({
+                    mIsPaging = false
+                }, 20)
             }
 
         })

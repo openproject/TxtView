@@ -32,12 +32,12 @@
             <RadioButton android:id="@+id/renderModeNomal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:checked="true"
                 android:text="NORMAL"/>
             <RadioButton android:id="@+id/renderModeDoubleBuffer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DOUBLE_BUFFER"/>
+                android:checked="true"
+                android:text="DOUBLE BUFFER"/>
         </RadioGroup>
 
         <RadioGroup android:id="@+id/nightMode"

@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // TxtView Builder
-        txtViewBuilder.setRenderMode(RenderMode.NORMAL)
+        txtViewBuilder.setRenderMode(RenderMode.DOUBLE_BUFFER)
                 .setTitle("我是设置的标题")
                 .setBackgroudDrawable(R.drawable.theme_leather_bg)
                 .setContentPainter(contentPaint)
