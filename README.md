@@ -18,6 +18,7 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 
 ## 效果图
 
+![Screenshot](art/screen-config.png)
 ![Screenshot](art/screen-normal.png)
 ![Screenshot](art/screen-gpu.png)
 
@@ -97,21 +98,21 @@ txtViewLoadingView.setOnClickListener {
 后面会逐步开放接口，完善文档。
 
 ## 接口
-类 | 方法 | 说明 | 备注
-- | - | - | -
-TxtView | setContent(content: String) | 返回配置的加载视图 |
-TxtView | prevPage() | 上一页 |
-TxtView | nextPage() | 下一页 |
-TxtView | gotoPage(pageIndex: Int) | 跳转到某一页 | pageIndex 从 1 开始计数
-TxtView | firstPage() | 首页 |
-TxtView | lastPage() | 尾页 |
-TxtView | prevPageWithAnim() | 上一页（带动画） |
-TxtView | nextPageWithAnim() | 下一页（带动画） |
-TxtView | getLoadingView() : View? | 返回配置的加载视图 | 
-TxtView | showLoading() | 显示加载视图 | 
-TxtView | showCustomView(clearContent: Boolean) | 显示自定义视图 | clearContent 标识是否隐藏文字内容
-TxtView | hideCustomView() | 隐藏视图 |
-TxtView | release() | 释放资源 |
+| 类 | 方法 | 说明 | 备注 |
+| - | - | - | - |
+| TxtView | setContent(content: String) | 返回配置的加载视图 | |
+| TxtView | prevPage() | 上一页 | |
+| TxtView | nextPage() | 下一页 | |
+| TxtView | gotoPage(pageIndex: Int) | 跳转到某一页 | pageIndex 从 1 开始计数|
+| TxtView | firstPage() | 首页 | |
+| TxtView | lastPage() | 尾页 | |
+| TxtView | prevPageWithAnim() | 上一页（带动画） | |
+| TxtView | nextPageWithAnim() | 下一页（带动画） | |
+| TxtView | getLoadingView() : View? | 返回配置的加载视图 | |
+| TxtView | showLoading() | 显示加载视图 | |
+| TxtView | showCustomView(clearContent: Boolean) | 显示自定义视图 | clearContent 标识是否隐藏文字内容|
+| TxtView | hideCustomView() | 隐藏视图 | |
+| TxtView | release() | 释放资源 | |
 
 ## 贡献
 
