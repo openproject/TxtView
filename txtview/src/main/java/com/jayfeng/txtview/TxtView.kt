@@ -94,6 +94,9 @@ class TxtView : ViewGroup {
 
     private var isLoading = true
     private var loadingView: View? = null
+    private var customView: View? = null
+
+    private var isClearContent = false
 
     init {
         mHeaderPaint.apply {
@@ -125,8 +128,12 @@ class TxtView : ViewGroup {
             if (childView.id == ResourceLess.`$id`(context, "txtViewLoadingView", ResourceLess.TYPE.ID)) {
                 // Loading View
                 loadingView = childView
-                measureChild(childView, widthMeasureSpec, heightMeasureSpec)
+            } else if (childView.id == ResourceLess.`$id`(context, "txtViewCustomView", ResourceLess.TYPE.ID)) {
+                // Custom View
+                customView = childView
             }
+
+            measureChild(childView, widthMeasureSpec, heightMeasureSpec)
         }
 
         setMeasuredDimension(widthSize, heightSize)
@@ -143,9 +150,24 @@ class TxtView : ViewGroup {
                     (width + cWidth) / 2,
                     (height + cHeight) / 2)
         }
+
+        customView?.let {
+            val cWidth = it.measuredWidth
+            val cHeight = it.measuredHeight
+
+            it.layout((width - cWidth) / 2,
+                    (height - cHeight) / 2,
+                    (width + cWidth) / 2,
+                    (height + cHeight) / 2)
+        }
     }
 
     override fun onDraw(canvas: Canvas) {
+
+        if (isLoading || isClearContent) {
+            return
+        }
+
         when {
             Math.abs(moveX) < ViewConfiguration.getTouchSlop() -> {
                 drawPage(canvas, mPage)
@@ -451,6 +473,34 @@ class TxtView : ViewGroup {
         mIsPaging = true
     }
 
+    public fun getLoadingView() : View? {
+        return customView
+    }
+
+    public fun showLoading() {
+        isLoading = true
+        loadingView?.visibility = View.VISIBLE
+        invalidate()
+    }
+
+    public fun getCustomView() : View? {
+        return customView
+    }
+
+    public fun showCustomView(clearContent: Boolean) {
+        isClearContent = clearContent
+        customView?.visibility = View.VISIBLE
+    }
+
+    public fun hideCustomView() {
+        isClearContent = false
+        customView?.visibility = View.GONE
+    }
+
+/*    public fun isClearContent() : Boolean {
+        return isClearContent
+    }*/
+
     fun release() {
         if (mAdBitmap?.isRecycled == false) {
             mAdBitmap?.recycle()
@@ -464,7 +514,7 @@ class TxtView : ViewGroup {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
-        if (isLoading) {
+        if (isLoading || isClearContent) {
             return false
         }
 

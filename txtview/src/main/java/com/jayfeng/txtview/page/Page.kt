@@ -121,7 +121,7 @@ class Page(val width: Int,
 
     fun isFull(): Boolean {
 
-        return drawHeight - (contentFontMetrics.descent - contentFontMetrics.ascent) > height - header.height - footer.height
+        return drawHeight - lineSpace * 2 - (contentFontMetrics.descent - contentFontMetrics.ascent) > height - header.height - footer.height
     }
 
 }

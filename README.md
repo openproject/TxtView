@@ -13,7 +13,7 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 - 手势回调
 - 支持嵌入广告位
 - 支持双缓冲模式（内存换性能）
-- 自定义加载视图
+- 支持内嵌视图：加载视图、自定义视图等
 
 
 ## 效果图
@@ -56,6 +56,13 @@ TxtView 目标是打造一款高性能的 TXT 阅读渲染视图，即使是在�
 #### 第二步，设置 TxtView 属性
 
 ```kotlin
+// TxtViewBuilder 配置参数
+txtViewBuilder.setRenderMode(RenderMode.DOUBLE_BUFFER)
+    .setTitle("我是设置的标题")
+    .setBackgroudDrawable(R.drawable.theme_leather_bg)
+    .setContentPainter(contentPaint)
+    .build()
+
 // 设置文本内容
 txtView.setContent(sb.toString())
 // 设置广告图片
@@ -88,6 +95,23 @@ txtViewLoadingView.setOnClickListener {
 ```
 
 后面会逐步开放接口，完善文档。
+
+## 接口
+类 | 方法 | 说明 | 备注
+- | - | - | -
+TxtView | setContent(content: String) | 返回配置的加载视图 |
+TxtView | prevPage() | 上一页 |
+TxtView | nextPage() | 下一页 |
+TxtView | gotoPage(pageIndex: Int) | 跳转到某一页 | pageIndex 从 1 开始计数
+TxtView | firstPage() | 首页 |
+TxtView | lastPage() | 尾页 |
+TxtView | prevPageWithAnim() | 上一页（带动画） |
+TxtView | nextPageWithAnim() | 下一页（带动画） |
+TxtView | getLoadingView() : View? | 返回配置的加载视图 | 
+TxtView | showLoading() | 显示加载视图 | 
+TxtView | showCustomView(clearContent: Boolean) | 显示自定义视图 | clearContent 标识是否隐藏文字内容
+TxtView | hideCustomView() | 隐藏视图 |
+TxtView | release() | 释放资源 |
 
 ## 贡献
 

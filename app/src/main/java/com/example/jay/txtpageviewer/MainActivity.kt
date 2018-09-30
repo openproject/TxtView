@@ -123,6 +123,27 @@ class MainActivity : AppCompatActivity() {
         txtViewLoadingView.setOnClickListener {
             Toast.makeText(this@MainActivity, "点击了 LoadingView", Toast.LENGTH_SHORT).show()
         }
+
+        innerViewLoading.setOnClickListener {
+            txtView.showLoading()
+            txtView.postDelayed({
+                txtView.setContent(sb.toString())
+            }, 2000)
+        }
+        innerViewCustomWithContent.setOnClickListener {
+            if (txtView.getCustomView()?.visibility == View.GONE) {
+                txtView.showCustomView(false)
+            } else {
+                txtView.hideCustomView()
+            }
+        }
+        innerViewCustomWithoutContent.setOnClickListener {
+            if (txtView.getCustomView()?.visibility == View.GONE) {
+                txtView.showCustomView(true)
+            } else {
+                txtView.hideCustomView()
+            }
+        }
     }
 
     override fun onDestroy() {
