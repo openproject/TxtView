@@ -18,12 +18,16 @@ import android.view.animation.DecelerateInterpolator
 import com.jayfeng.lesscode.core.DisplayLess
 import com.jayfeng.lesscode.core.FileLess
 import com.jayfeng.lesscode.core.ResourceLess
+import com.jayfeng.txtview.cache.PageCache
+import com.jayfeng.txtview.cache.TxtCache
 import com.jayfeng.txtview.page.*
 import com.jayfeng.txtview.theme.NightTheme
 import com.jayfeng.txtview.touch.PageTouchLinstener
 import com.jayfeng.txtview.touch.TouchType
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class TxtView : ViewGroup {
 
@@ -252,22 +256,28 @@ class TxtView : ViewGroup {
         setContent(FileLess.`$read`(context.resources.assets.open("demo.txt")))
     }
 
-    fun setContent(content: String) {
+    fun setContent(content: String, cacheKey: String? = null) {
         this.mContent = content
 
         this.isLoading = false
         this.loadingView?.visibility = View.GONE
 
         post {
-            Thread {
-                val startTime = System.currentTimeMillis()
+                Thread {
+                    val startTime = System.currentTimeMillis()
 
-                parseContent(true)
+                    parseContent(true)
 
-                postInvalidate()
+                    if (cacheKey != null && File(context.cacheDir, cacheKey).exists()) {
+                        mPage = TxtCache.restore(context, cacheKey).pageMark
 
-                Log.d("feng", "-------- parse cost: " + (System.currentTimeMillis() - startTime))
-            }.start()
+                        Log.d("feng", "---- feng mpage mark: $mPage")
+                    }
+
+                    postInvalidate()
+
+                    Log.d("feng", "-------- parse cost: " + (System.currentTimeMillis() - startTime))
+                }.start()
         }
     }
 
@@ -495,6 +505,20 @@ class TxtView : ViewGroup {
     public fun hideCustomView() {
         isClearContent = false
         customView?.visibility = View.GONE
+    }
+
+    public fun saveCache(cacheKey: String) {
+        val txtCache = TxtCache()
+        txtCache.cacheKey = cacheKey
+        txtCache.pageMark = mPage
+        txtCache.fontSize = TxtView.contentPaint.textSize
+//        txtCache.pageCacheList = ArrayList()
+//
+//        mPages.forEach { page ->
+//            txtCache.pageCacheList?.add(page.saveCache())
+//        }
+
+        txtCache.save(context)
     }
 
 /*    public fun isClearContent() : Boolean {

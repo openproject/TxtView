@@ -40,13 +40,13 @@ class MainActivity : AppCompatActivity() {
                 .build()
 
         val sb = StringBuilder()
-        for (i in 1..10) {
+        for (i in 1..2) {
             sb.append(content)
             sb.append("\n\n")
         }
         // 设置文本内容
         txtView.postDelayed({
-            txtView.setContent(sb.toString())
+            txtView.setContent(sb.toString(), "22")
         }, 2000)
 //        contentView.setTxtFile("")
         // 设置广告图片
@@ -148,6 +148,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+
+        val startTime = System.currentTimeMillis()
+        txtView.saveCache("22")
+        Log.d("feng", "------------- save cache cost: " + (System.currentTimeMillis() - startTime))
 
         txtView.release()
     }

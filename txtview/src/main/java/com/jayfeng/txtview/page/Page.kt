@@ -6,8 +6,10 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.Log
 import com.jayfeng.txtview.TxtView
+import com.jayfeng.txtview.cache.PageCache
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class Page(val width: Int,
            val height: Int,
@@ -122,6 +124,20 @@ class Page(val width: Int,
     fun isFull(): Boolean {
 
         return drawHeight - lineSpace * 2 - (contentFontMetrics.descent - contentFontMetrics.ascent) > height - header.height - footer.height
+    }
+
+    fun saveCache() : PageCache {
+        val pageCache = PageCache()
+        pageCache.s = start
+        pageCache.l = length
+        pageCache.lines = ArrayList()
+
+        lines.forEach { line ->
+            val lineCache = line.saveCache()
+            pageCache.lines?.add(lineCache)
+        }
+
+        return pageCache
     }
 
 }
